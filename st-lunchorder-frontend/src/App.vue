@@ -1,17 +1,28 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <div class="row">
+      <div class="col">
+        <navigation></navigation>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <order/>
+      </div>
+    </div>
+    
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import Navigation from './components/Navigation'
+import Order from './components/Order.vue'
 
 export default {
   name: 'app',
   components: {
-    HelloWorld
+    Navigation,
+    Order
   }
 }
 </script>
@@ -21,8 +32,8 @@ export default {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
+  text-align: left;
   color: #2c3e50;
-  margin-top: 60px;
+  margin-top: 10px;
 }
 </style>
