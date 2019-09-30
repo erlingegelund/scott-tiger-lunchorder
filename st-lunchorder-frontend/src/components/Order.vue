@@ -39,13 +39,16 @@
                             >
                               <span v-show="opt.mandatory">*</span>
                               {{opt.description}}
+                              <span
+                                v-show="opt.additionalPrice"
+                              >(+ {{opt.additionalPrice}} kr)</span>
                             </div>
                             <multiselect
                               v-model="opt.value"
                               :options="opt.selections"
                               v-bind:multiple="opt.multiple"
                               v-bind:close-on-select="!opt.multiple"
-                              @select="optionAutoOrder(mitem)"
+                              @close="optionAutoOrder(mitem)"
                             />
                           </div>
                         </div>
@@ -90,6 +93,7 @@
 </template>
 <script>
 import Multiselect from "vue-multiselect";
+import Axios from "axios";
 export default {
   components: { Multiselect },
   methods: {
@@ -115,20 +119,23 @@ export default {
     },
     optionAutoOrder(item) {
       var filtered = this.order.items.filter(id => id === item.id);
-      if (filtered.length === 0) {
+      if (!this.isMandatoryMissing(item) && filtered.length === 0) {
         this.incrementOrder(item);
       }
     },
     isMandatoryMissing(item) {
+      var allFilled = true;
       if (item.options) {
         var manOpts = item.options.filter(opt => opt.mandatory);
         for (var i in manOpts) {
-          if (manOpts[i].multiple && manOpts[i].value.length === 0) return true;
-          else if (!manOpts[i].multiple && manOpts[i].value === "") return true;
-          else return false;
+          if (manOpts[i].multiple && manOpts[i].value.length === 0)
+            allFilled = allFilled && false;
+          else if (!manOpts[i].multiple && manOpts[i].value === "")
+            allFilled = allFilled && false;
+          else allFilled = allFilled && true;
         }
       }
-      return false;
+      return !allFilled;
     }
   },
   data() {
@@ -136,110 +143,13 @@ export default {
       order: {
         items: []
       },
-      suppliers: [
-        {
-          id: 1,
-          display: true,
-          name: "Slagter Lise og John",
-          menu: [
-            {
-              category: "Salater",
-              display: false,
-              items: [
-                {
-                  id: 101,
-                  description: "Stor salat med kød",
-                  comment: "",
-                  price: 35.0,
-                  options: [
-                    {
-                      description: "Kød",
-                      mandatory: true,
-                      multiple: false,
-                      value: "",
-                      selections: ["Kylling", "Skinke", "Tun"]
-                    }
-                  ],
-                  itemsOrdered: 0
-                }
-              ]
-            },
-            {
-              category: "Smørrebrød",
-              display: false,
-              items: [
-                {
-                  id: 201,
-                  description: "Fiskefilet med rejer",
-                  comment: "",
-                  price: 35.0,
-                  options: [],
-                  itemsOrdered: 0
-                },
-                {
-                  id: 202,
-                  description: "Fiskefilet med remoulade",
-                  comment: "",
-                  price: 15.0,
-                  options: [],
-                  itemsOrdered: 0
-                },
-                {
-                  id: 203,
-                  description: "Frikadelle med surt",
-                  comment: "",
-                  price: 15.0,
-                  options: [],
-                  itemsOrdered: 0
-                },
-                {
-                  id: 204,
-                  description: "Kalkunbryst med karrydressing",
-                  comment: "",
-                  price: 35.0,
-                  options: [],
-                  itemsOrdered: 0
-                }
-              ]
-            }
-          ]
-        },
-        {
-          id: 2,
-          display: false,
-          name: "Bagels n' Cream",
-          menu: [
-            {
-              category: "Salater",
-              display: false,
-              items: []
-            },
-            {
-              category: "Bagels",
-              display: false,
-              items: []
-            }
-          ]
-        },
-        {
-          id: 3,
-          display: false,
-          name: "Coffee & Sandwich",
-          menu: [
-            {
-              category: "Salater",
-              display: false,
-              items: []
-            },
-            {
-              category: "Sandwich",
-              display: false,
-              items: []
-            }
-          ]
-        }
-      ]
+      suppliers: []
     };
+  },
+  created: function() {
+    Axios.get("/mocked/suppliers.json").then(response => {
+      this.suppliers = response.data.suppliers;
+    });
   }
 };
 </script>
