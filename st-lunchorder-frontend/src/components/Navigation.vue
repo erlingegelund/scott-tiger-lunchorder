@@ -42,21 +42,9 @@ export default {
   props: ["showNavIcon"],
   methods: {
     getUser() {
+      // TODO: Change to read from localStorage
       return "Herman Bang"
     }
   }
 };
 </script>
-<style scoped>
-.nav-button {
-  background-color: #aaaaaa;
-  padding-left: 5px;
-  padding-right: 5px;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  border-style: solid;
-  border-color: #000000;
-  border-width: 1px;
-  margin-left: 20px;
-}
-</style>
