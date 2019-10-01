@@ -1,29 +1,13 @@
 <template>
   <div id="app">
-    <div class="row">
-      <div class="col">
-        <navigation></navigation>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col">
-        <order/>
-      </div>
-    </div>
-    
+    <router-view/>
   </div>
 </template>
 
 <script>
-import Navigation from './components/Navigation'
-import Order from './components/Order.vue'
 
 export default {
-  name: 'app',
-  components: {
-    Navigation,
-    Order
-  }
+  name: 'app'
 }
 </script>
 

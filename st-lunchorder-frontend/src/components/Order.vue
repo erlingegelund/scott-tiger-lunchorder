@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Navigation></Navigation>
+    <Navigation :showNavIcon="true"></Navigation>
     <div class="container-fluid">
       <div class="row" v-show="isBeforeDeadline()">
         <div class="col">
@@ -175,7 +175,7 @@ export default {
   },
   data() {
     return {
-      deadline: "1059",
+      deadline: "1000",
       order: {
         items: []
       },

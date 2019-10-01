@@ -132,7 +132,7 @@
                                     "multiple": true,
                                     "value": "",
                                     "selections": [
-                                        "karry",
+                                        "Karry",
                                         "Cremefraise",
                                         "Chili Mayo",
                                         "Grøn pesto",
@@ -160,8 +160,7 @@
                                         "Ja",
                                         "Nej"
                                     ],
-                                    "additionalPrice": 8
-                    
+                                    "additionalPrice": 8                    
                                 }
                             ],
                             "itemsOrdered": 0
