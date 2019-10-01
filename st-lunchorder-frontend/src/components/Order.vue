@@ -100,6 +100,7 @@
           <button
             class="btn btn-primary btn-lg"
             v-bind:disabled="order.items.length === 0 || isBeforeDeadline()"
+            @click="submitOrder()"
           >Bestil</button>
         </div>
       </div>
@@ -171,6 +172,10 @@ export default {
       }
       fmtDeadline += this.deadline.substr(-2);
       return fmtDeadline;
+    },
+    submitOrder() {
+      // Persist the order
+      this.$router.push({name: 'UserHistory'})
     }
   },
   data() {

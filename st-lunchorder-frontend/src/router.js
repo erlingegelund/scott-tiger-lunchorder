@@ -14,14 +14,14 @@ Vue.use(VueRouter)
 export const router = new VueRouter({
     mode: 'history',
     routes: [
-        { path: '/login', name: "Login", component: LoginPage },
-        { path: '/', name: "Order", component: Order },
-        { path: '/userhistory', name: "UserHistory", component: UserHistory},
-        { path: '/orderhistory', name: "OrderHistory", component: OrderHistory},
-        { path: '/monthly', name: "MonthlyReport", component: MonthlyReport},
-        { path: '/category', name: "Category", component: Category},
-        { path: '/supplier', name: "Supplier", component: Supplier},
-        { path: '/users', name: "UserMgmt", component: UserMgmt},
+        { path: '/login', name: "Login", component: LoginPage, props: true},
+        { path: '/', name: "Order", component: Order, props: true},
+        { path: '/userhistory', name: "UserHistory", component: UserHistory, props: true},
+        { path: '/orderhistory', name: "OrderHistory", component: OrderHistory, props: true},
+        { path: '/monthly', name: "MonthlyReport", component: MonthlyReport, props: true},
+        { path: '/category', name: "Category", component: Category, props: true},
+        { path: '/supplier', name: "Supplier", component: Supplier, props: true},
+        { path: '/users', name: "UserMgmt", component: UserMgmt, props: true},
         { path: '*', redirect: '/' }
     ]
 })
