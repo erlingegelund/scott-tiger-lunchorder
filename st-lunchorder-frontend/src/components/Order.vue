@@ -2,10 +2,10 @@
   <div>
     <Navigation :showNavIcon="true"></Navigation>
     <div class="container-fluid">
-      <div class="row" v-show="isBeforeDeadline()">
+      <div class="row" v-show="isAfterDeadline()">
         <div class="col">
           <div
-            v-show="isBeforeDeadline()"
+            v-show="isAfterDeadline()"
             class="alert alert-warning"
             role="alert"
           >Det er kun muligt at bestille indtil kl {{deadlineFormatted()}}</div>
@@ -67,25 +67,24 @@
                       </div>
                     </div>
                     <div class="row">
-                      <div class="col-2">
+                      <div class="col col-1">
                         <span>Kommentar:</span>
                       </div>
-                      <div class="col-6">
-                        <input type="text" class="form-control" size="50" v-model="mitem.comment" />
+                      <div class="col">
+                        <b-form-input type="text" v-model="mitem.comment" />
                       </div>
                       <div class="col-2" style="text-align: right;">Antal: {{mitem.itemsOrdered}}</div>
                       <div class="col-2" style="text-align: right;">
-                        <button
-                          class="btn btn-sm btn-secondary"
+                        <b-button size="sm"
                           v-bind:disabled="mitem.itemsOrdered === 0"
                           @click="decrementOrder(mitem)"
-                        >-</button>
+                        >-</b-button>
                         <span>&nbsp;</span>
-                        <button
-                          class="btn btn-sm btn-secondary"
+                        <b-button
+                          size="sm"
                           @click="incrementOrder(mitem)"
                           v-bind:disabled="isMandatoryMissing(mitem)"
-                        >+</button>
+                        >+</b-button>
                       </div>
                     </div>
                   </div>
@@ -95,11 +94,11 @@
           </div>
         </div>
       </div>
-      <div class="row">
+      <div class="row" style="margin-top: 20px;">
         <div class="col col-1">
           <button
             class="btn btn-primary btn-lg"
-            v-bind:disabled="order.items.length === 0 || isBeforeDeadline()"
+            v-bind:disabled="order.items.length === 0 || isAfterDeadline()"
             @click="submitOrder()"
           >Bestil</button>
         </div>
@@ -154,7 +153,7 @@ export default {
       }
       return !allFilled;
     },
-    isBeforeDeadline() {
+    isAfterDeadline() {
       var rc = false;
       var now = new Date();
       var hm = now.getHours() * 100 + now.getMinutes();
@@ -175,7 +174,7 @@ export default {
     },
     submitOrder() {
       // Persist the order
-      this.$router.push({name: 'UserHistory'})
+      this.$router.push({"name": 'UserHistory'})
     }
   },
   data() {
@@ -197,26 +196,6 @@ export default {
 <style src="vue-multiselect/dist/vue-multiselect.min.css"></style>
 
 <style scoped>
-.row-supplier {
-  background-color: #444444;
-  color: #aaaaaa;
-  margin-top: 2px;
-  margin-bottom: 2px;
-  font-size: 1.4em;
-}
-.row-category {
-  background-color: #ffffff;
-  color: #444444;
-  margin-top: 2px;
-  margin-bottom: 2px;
-  font-weight: bold;
-}
-.row-item {
-  background-color: #aaaaaa;
-  color: #222222;
-  margin-top: 2px;
-  margin-bottom: 2px;
-}
 .row-option {
   padding-bottom: 2px;
 }

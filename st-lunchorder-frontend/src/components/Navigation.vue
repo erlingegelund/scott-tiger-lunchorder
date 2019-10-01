@@ -1,22 +1,22 @@
 <template>
   <div class="row align-items-center" style="background-color: #444444">
     <div class="col col-1">
-<div v-show="showNavIcon">
-  <b-dropdown size="lg"  variant="link" toggle-class="text-decoration-none" no-caret>
-    <template v-slot:button-content>
-      <span >
-        <octicon name="grabber" scale="3"></octicon>
-      </span>
-    </template>
-    <b-dropdown-item :to="{name: 'Order'}">Bestil frokost</b-dropdown-item>
-    <b-dropdown-item :to="{name: 'UserHistory'}">Mine bestillinger</b-dropdown-item>
-    <b-dropdown-item :to="{name: 'OrderHistory'}">Alle bestillinger</b-dropdown-item>
-    <b-dropdown-item :to="{name: 'MonthlyReport'}">Månedsrapport</b-dropdown-item>
-    <b-dropdown-item :to="{name: 'Supplier'}">Leverandøradministration</b-dropdown-item>
-    <b-dropdown-item :to="{name: 'Category'}">Kategoriadministration</b-dropdown-item>
-    <b-dropdown-item :to="{name: 'UserMgmt'}">Brugeradministration</b-dropdown-item>
-  </b-dropdown>
-</div>      
+      <div v-show="showNavIcon">
+        <b-dropdown size="lg" variant="link" toggle-class="text-decoration-none" no-caret>
+          <template v-slot:button-content>
+            <span>
+              <octicon name="grabber" scale="3"></octicon>
+            </span>
+          </template>
+          <b-dropdown-item :to="{name: 'Order'}">Bestil frokost</b-dropdown-item>
+          <b-dropdown-item :to="{name: 'UserHistory'}">Mine bestillinger</b-dropdown-item>
+          <b-dropdown-item :to="{name: 'OrderHistory'}">Alle bestillinger</b-dropdown-item>
+          <b-dropdown-item :to="{name: 'MonthlyReport'}">Månedsrapport</b-dropdown-item>
+          <b-dropdown-item :to="{name: 'Supplier'}">Leverandøradministration</b-dropdown-item>
+          <b-dropdown-item :to="{name: 'Category'}">Kategoriadministration</b-dropdown-item>
+          <b-dropdown-item :to="{name: 'UserMgmt'}">Brugeradministration</b-dropdown-item>
+        </b-dropdown>
+      </div>
     </div>
     <div class="col col-10">
       <h1 class="st-head">scott/tiger frokostbestilling</h1>
@@ -43,7 +43,7 @@ export default {
   methods: {
     getUser() {
       // TODO: Change to read from localStorage
-      return "Herman Bang"
+      return "Herman Bang";
     }
   }
 };
