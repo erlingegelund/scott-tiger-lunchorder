@@ -7,9 +7,9 @@
           <h2>Mine bestillinger</h2>
         </div>
       </div>
-      <div class="row">
+      <div class="row align-items-center">
         <div class="col col-1">
-          <span>Vælg dato:</span>
+          <span>Dato:</span>
         </div>
         <div class="col">
           <b-form-input type="date" v-model="orderdate" @update="orderDateChange()" />
@@ -19,19 +19,19 @@
         <div class="col">
           <div class="container-fluid">
             <div class="row row-supplier">
-              <div class="col col-4">Beskrivelse</div>
-              <div class="col col-4">Valg</div>
-              <div class="col col-2">Kommentar</div>
-              <div class="col col-1" style="text-align: right;">Pris</div>
-              <div class="col" style="text-align: right;">Antal</div>
+              <div class="col col-md-4">Beskrivelse</div>
+              <div class="col col-md-3">Valg</div>
+              <div class="col">Kommentar</div>
+              <div class="col col-md-1" style="text-align: right;">Pris</div>
+              <div class="col col-md-1" style="text-align: right;">Antal</div>
             </div>
             <div
               v-for="order in orders"
               :key="order.orderid"
               class="row align-items-center row-item"
             >
-              <div class="col col-4">{{order.description}}</div>
-              <div class="col col-4">
+              <div class="col col-md-4">{{order.description}}</div>
+              <div class="col col-md-3">
                 <table>
                   <tr v-for="opt in order.options" :key="opt.description" style="font-size: 0.8em;">
                     <td>{{opt.description}}:</td>
@@ -41,12 +41,12 @@
                   </tr>
                 </table>
               </div>
-              <div class="col col-2">{{order.comment}}</div>
-              <div class="col col-1" style="text-align: right;">
+              <div class="col">{{order.comment}}</div>
+              <div class="col col-md-1" style="text-align: right;">
                 <span>kr</span>
                 {{order.price}}
               </div>
-              <div class="col" style="text-align: right;">
+              <div class="col col-md-1" style="text-align: right;">
                 {{order.itemsOrdered}}
                 <span v-show="showUpdateOrder()">
                   <b-button
@@ -64,7 +64,7 @@
       </div>
       <div class="row" style="margin-top: 20px;" v-show="showUpdateOrder()">
         <div class="col col-1">
-          <b-button size="lg" variant="primary" :disabled="!orderUpdated">Opdater</b-button>
+          <b-button size="lg" variant="primary" :disabled="!orderUpdated" @click="updateOrder()">Opdater</b-button>
         </div>
       </div>
     </div>
@@ -155,7 +155,7 @@ export default {
       var show = true;
       var now = new Date();
       var _orderDate = Date.parse(this.orderdate)
-      if(_orderDate < now) {
+      if(_orderDate < now.getMilliseconds()) {
         show = false
       } else {
         var hm = now.getHours() * 100 + now.getMinutes();
@@ -164,7 +164,8 @@ export default {
 
       return show;
     },
-    orderDateChange() {}
+    orderDateChange() {},
+    updateOrder() {}
   },
   created() {
     var today = new Date();

@@ -29,14 +29,14 @@
                 <div class="container-fluid" v-show="mcat.display">
                   <div v-for="mitem in mcat.items" :key="mitem.id">
                     <div class="row row-item">
-                      <div class="col-10">{{mitem.description}}</div>
-                      <div class="col-2" style="text-align: right;">{{mitem.price}} kr</div>
+                      <div class="col col-md-10">{{mitem.description}}</div>
+                      <div class="col col-md-2" style="text-align: right;">{{mitem.price}} kr</div>
                     </div>
                     <div class="row" v-show="mitem.options.length > 0">
-                      <div class="col-2">
+                      <div class="col col-md-2">
                         <span>Vælg:</span>
                       </div>
-                      <div class="col-6">
+                      <div class="col col-md-6">
                         <div>
                           <div
                             v-for="opt in mitem.options"
@@ -66,25 +66,27 @@
                         </div>
                       </div>
                     </div>
-                    <div class="row">
-                      <div class="col col-1">
+                    <div class="row align-items-center">
+                      <div class="col col-md-1">
                         <span>Kommentar:</span>
                       </div>
                       <div class="col">
                         <b-form-input type="text" v-model="mitem.comment" />
                       </div>
-                      <div class="col-2" style="text-align: right;">Antal: {{mitem.itemsOrdered}}</div>
-                      <div class="col-2" style="text-align: right;">
+                      <div class="col-md-2" style="text-align: right;">Antal: {{mitem.itemsOrdered}}</div>
+                      <div class="col-md-2" style="text-align: right;">
+                        <span>
                         <b-button size="sm"
                           v-bind:disabled="mitem.itemsOrdered === 0"
                           @click="decrementOrder(mitem)"
+                          style="margin-right: 2px;"
                         >-</b-button>
-                        <span>&nbsp;</span>
                         <b-button
                           size="sm"
                           @click="incrementOrder(mitem)"
                           v-bind:disabled="isMandatoryMissing(mitem)"
                         >+</b-button>
+                        </span>
                       </div>
                     </div>
                   </div>
