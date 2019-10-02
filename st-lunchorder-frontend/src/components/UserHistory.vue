@@ -154,11 +154,15 @@ export default {
     showUpdateOrder() {
       var show = true;
       var now = new Date();
+      var hm = now.getHours() * 100 + now.getMinutes();
+      now.setHours(0)
+      now.setMinutes(0)
+      now.setSeconds(0)
+      now.setMilliseconds(0)
       var _orderDate = Date.parse(this.orderdate)
-      if(_orderDate < now.getMilliseconds()) {
+      if(_orderDate < now.getTime()) {
         show = false
       } else {
-        var hm = now.getHours() * 100 + now.getMinutes();
         show = (hm < this.deadline.valueOf())
       }
 
