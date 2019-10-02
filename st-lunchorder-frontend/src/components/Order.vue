@@ -2,13 +2,18 @@
   <div>
     <Navigation :showNavIcon="true"></Navigation>
     <div class="container-fluid">
-      <div class="row" v-show="isAfterDeadline()">
+      <div class="row component-header">
+        <div class="col">
+          <h2>Bestil frokost</h2>
+        </div>
+      </div>
+      <div class="row" v-show="isAfterDeadline">
         <div class="col">
           <div
-            v-show="isAfterDeadline()"
+            v-show="isAfterDeadline"
             class="alert alert-warning"
             role="alert"
-          >Det er kun muligt at bestille indtil kl {{deadlineFormatted()}}</div>
+          >Det er kun muligt at bestille indtil kl {{deadlineFormatted}}</div>
         </div>
       </div>
       <div v-for="sup in suppliers" :key="sup.id" class="row">
@@ -76,16 +81,17 @@
                       <div class="col-md-2" style="text-align: right;">Antal: {{mitem.itemsOrdered}}</div>
                       <div class="col-md-2" style="text-align: right;">
                         <span>
-                        <b-button size="sm"
-                          v-bind:disabled="mitem.itemsOrdered === 0"
-                          @click="decrementOrder(mitem)"
-                          style="margin-right: 2px;"
-                        >-</b-button>
-                        <b-button
-                          size="sm"
-                          @click="incrementOrder(mitem)"
-                          v-bind:disabled="isMandatoryMissing(mitem)"
-                        >+</b-button>
+                          <b-button
+                            size="sm"
+                            v-bind:disabled="mitem.itemsOrdered === 0"
+                            @click="decrementOrder(mitem)"
+                            style="margin-right: 2px;"
+                          >-</b-button>
+                          <b-button
+                            size="sm"
+                            @click="incrementOrder(mitem)"
+                            v-bind:disabled="isMandatoryMissing(mitem)"
+                          >+</b-button>
                         </span>
                       </div>
                     </div>
@@ -100,7 +106,7 @@
         <div class="col col-1">
           <button
             class="btn btn-primary btn-lg"
-            v-bind:disabled="order.items.length === 0 || isAfterDeadline()"
+            v-bind:disabled="order.items.length === 0 || isAfterDeadline"
             @click="submitOrder()"
           >Bestil</button>
         </div>
@@ -112,6 +118,7 @@
 import Multiselect from "vue-multiselect";
 import Axios from "axios";
 import Navigation from "./Navigation.vue";
+import { DeadlineHelper } from '../_helpers/deadline'
 export default {
   components: { Multiselect, Navigation },
   methods: {
@@ -155,7 +162,14 @@ export default {
       }
       return !allFilled;
     },
+    submitOrder() {
+      // Persist the order
+      this.$router.push({ name: "UserHistory" });
+    }
+  },
+  computed: {
     isAfterDeadline() {
+      /*
       var rc = false;
       var now = new Date();
       var hm = now.getHours() * 100 + now.getMinutes();
@@ -163,25 +177,24 @@ export default {
         rc = true;
       }
       return rc;
+      */
+     return !DeadlineHelper.isBefore(null, this.now)
     },
     deadlineFormatted() {
-      var fmtDeadline = this.deadline;
-      if (this.deadline.length > 2) {
-        fmtDeadline = this.deadline.substr(0, this.deadline.length - 2) + ":";
+      var deadline = DeadlineHelper.getDeadline()
+      var fmtDeadline = deadline
+      if (deadline.length > 2) {
+        fmtDeadline = deadline.substr(0, deadline.length - 2) + ":";
       } else {
         fmtDeadline = "0:";
       }
-      fmtDeadline += this.deadline.substr(-2);
+      fmtDeadline += deadline.substr(-2);
       return fmtDeadline;
-    },
-    submitOrder() {
-      // Persist the order
-      this.$router.push({"name": 'UserHistory'})
     }
   },
   data() {
     return {
-      deadline: "1000",
+      now: Date.now(),
       order: {
         items: []
       },
@@ -189,6 +202,9 @@ export default {
     };
   },
   created: function() {
+    var self = this
+    setInterval(function() {self.now = Date.now()},30000)
+
     Axios.get("/mocked/suppliers.json").then(response => {
       this.suppliers = response.data.suppliers;
     });

@@ -2,7 +2,7 @@
   <div>
     <Navigation :showNavIcon="true"></Navigation>
     <div class="container-fluid">
-      <div class="row" style="margin-top: 10px; margin-bottom: 10px;">
+      <div class="row component-header">
         <div class="col">
           <h2>Mine bestillinger</h2>
         </div>
@@ -48,7 +48,7 @@
               </div>
               <div class="col col-md-1" style="text-align: right;">
                 {{order.itemsOrdered}}
-                <span v-show="showUpdateOrder()">
+                <span v-show="showUpdateOrder">
                   <b-button
                     size="sm"
                     :disabled="order.itemsOrdered === 0"
@@ -62,9 +62,14 @@
           </div>
         </div>
       </div>
-      <div class="row" style="margin-top: 20px;" v-show="showUpdateOrder()">
+      <div class="row" style="margin-top: 20px;" v-show="showUpdateOrder">
         <div class="col col-1">
-          <b-button size="lg" variant="primary" :disabled="!orderUpdated" @click="updateOrder()">Opdater</b-button>
+          <b-button
+            size="lg"
+            variant="primary"
+            :disabled="!orderUpdated"
+            @click="updateOrder()"
+          >Opdater</b-button>
         </div>
       </div>
     </div>
@@ -72,13 +77,15 @@
 </template>
 <script>
 import Navigation from "./Navigation";
+import { DeadlineHelper } from '../_helpers/deadline'
 export default {
+  name: 'user-history',
   components: { Navigation },
   data() {
     return {
       orderdate: "",
       orderUpdated: false,
-      deadline: "1000",
+      now: Date.now(),
       orders: [
         {
           orderid: 0,
@@ -151,30 +158,19 @@ export default {
         this.orderUpdated = true;
       }
     },
-    showUpdateOrder() {
-      var show = true;
-      var now = new Date();
-      var hm = now.getHours() * 100 + now.getMinutes();
-      now.setHours(0)
-      now.setMinutes(0)
-      now.setSeconds(0)
-      now.setMilliseconds(0)
-      var _orderDate = Date.parse(this.orderdate)
-      if(_orderDate < now.getTime()) {
-        show = false
-      } else {
-        show = (hm < this.deadline.valueOf())
-      }
-
-      return show;
-    },
     orderDateChange() {},
     updateOrder() {}
   },
+  computed: {
+    showUpdateOrder() {
+      return DeadlineHelper.isBefore(this.orderdate,this.now)
+    }
+  },
   created() {
     var today = new Date();
-    var fmt = today.toISOString();
-    this.orderdate = fmt.substr(0, 10);
+    this.orderdate = today.toISOString().substr(0, 10);
+    var self = this
+    setInterval(function() {self.now = Date.now()},30000)
   }
 };
 </script>

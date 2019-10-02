@@ -24,7 +24,7 @@
     <div class="col col-md-2" style="text-align: right;">
       <b-dropdown size="sm" variant="link" right toggle-class="text-decoration-none" v-show="showNavIcon">
         <template v-slot:button-content>{{getUser()}}</template>
-        <b-dropdown-item>Log af</b-dropdown-item>
+        <b-dropdown-item @click="logoff()">Log af</b-dropdown-item>
       </b-dropdown>
     </div>
   </div>
@@ -47,7 +47,11 @@ export default {
     },
     isAdministrator() {
       // TODO: Change to read from localStorage
-      return false
+      return true
+    }, 
+    logoff() {
+      localStorage.removeItem("user")
+      this.$router.push({name: 'Login'})
     }
   }
 };

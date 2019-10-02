@@ -2,7 +2,7 @@
   <div>
     <Navigation :showNavIcon="true"></Navigation>
     <div class="container-fluid">
-      <div class="row" style="margin-top: 10px; margin-bottom: 10px;">
+      <div class="row component-header">
         <div class="col">
           <h2>Dagens bestillinger</h2>
         </div>
