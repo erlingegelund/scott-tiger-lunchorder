@@ -41,7 +41,6 @@
   </div>
 </template>
 <script>
-import router from "../router.js";
 import Navigation from "./Navigation.vue";
 export default {
   components: { Navigation },
@@ -64,7 +63,7 @@ export default {
     this.returnUrl = this.$route.query.returnUrl || "/";
   },
   methods: {
-    handleSubmit(e) {
+    handleSubmit() {
       this.submitted = true;
       const { username, password } = this;
 

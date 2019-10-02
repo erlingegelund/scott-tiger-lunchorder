@@ -1,13 +1,13 @@
 import Vue from 'vue'
 import VueRouter from "vue-router"
-import Order from './components/Order'
-import LoginPage from './components/LoginPage'
-import UserHistory from './components/UserHistory'
-import OrderHistory from './components/OrderHistory'
-import MonthlyReport from './components/MonthlyReport'
-import Category from './components/Category'
-import Supplier from './components/Supplier'
-import UserMgmt from './components/UserMgmt'
+import Order from '@/components/Order'
+import LoginPage from '@/components/LoginPage'
+import UserHistory from '@/components/UserHistory'
+import OrderHistory from '@/components/OrderHistory'
+import MonthlyReport from '@/components/MonthlyReport'
+import Category from '@/components/Category'
+import Supplier from '@/components/Supplier'
+import UserMgmt from '@/components/UserMgmt'
 
 Vue.use(VueRouter)
 
