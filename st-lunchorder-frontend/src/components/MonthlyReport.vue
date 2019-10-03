@@ -36,13 +36,13 @@
               class="row row-item"
               v-for="order in orders"
               :key="order.user"
-              @click="toUserHistory(order.user)"
+              @dblclick="toUserHistory(order.user)"
             >
               <div class="col col-md-4">{{order.user}}</div>
               <div class="col" style="text-align: right;">{{order.itemsOrdered}}</div>
               <div class="col col-md-3" style="text-align: right;">{{order.priceTotal}}</div>
               <div class="col col-md-1 no-print">
-                <Octicon name="eye"></Octicon>
+                <Octicon name="ellipsis"></Octicon>
               </div>
             </div>
             <div class="row row-supplier">

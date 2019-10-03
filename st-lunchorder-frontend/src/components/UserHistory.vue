@@ -77,7 +77,7 @@
 </template>
 <script>
 import Navigation from "./Navigation";
-import { DeadlineHelper } from '../_helpers/deadline'
+import { STLunchHelper } from '../_helpers/stlunch'
 export default {
   name: 'user-history',
   components: { Navigation },
@@ -163,7 +163,7 @@ export default {
   },
   computed: {
     showUpdateOrder() {
-      return DeadlineHelper.isBefore(this.orderdate,this.now)
+      return STLunchHelper.isBefore(this.orderdate,this.now)
     }
   },
   created() {

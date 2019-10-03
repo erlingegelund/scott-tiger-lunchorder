@@ -1,6 +1,7 @@
-export const DeadlineHelper = {
+export const STLunchHelper = {
     getDeadline,
-    isBefore
+    isBefore,
+    validateMail
 }
 
 const deadline = "1000"
@@ -33,4 +34,8 @@ function isBefore(dateStr, timeInMillis) {
     }
 
     return before;
+}
+
+function validateMail(email) {
+    return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)
 }

@@ -29,6 +29,15 @@
   margin-top: 10px; 
   margin-bottom: 10px;
 }
+.btn-check {
+  margin-left: 1px;margin-right: 1px;color: green;
+}
+.btn-delete {
+  margin-left: 1px;margin-right: 1px;color: red;
+}
+.btn-edit {
+  margin-left: 1px;margin-right: 1px;color: #ffee00;
+}
 
 @media print {
   .row-supplier {

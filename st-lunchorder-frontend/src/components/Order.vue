@@ -19,16 +19,16 @@
       <div v-for="sup in suppliers" :key="sup.id" class="row">
         <div class="col">
           <div @click="toggleChildren(sup)" class="row-supplier">
-            <span v-if="sup.display">-</span>
-            <span v-else>+</span>
+            <span v-if="sup.display" style="margin-left: 5px;"><octicon name="chevron-down"/></span>
+            <span v-else style="margin-left: 5px;"><octicon name="chevron-right"/></span>
             {{sup.name}}
           </div>
           <div class="container-fluid" v-show="sup.display">
             <div v-for="mcat in sup.menu" :key="mcat.catergory" class="row">
               <div class="col">
                 <div @click="toggleChildren(mcat)" class="row-category">
-                  <span v-if="mcat.display">-</span>
-                  <span v-else>+</span>
+                  <span v-if="mcat.display"><octicon name="chevron-down"/></span>
+                  <span v-else><octicon name="chevron-right"/></span>
                   {{mcat.category}}
                 </div>
                 <div class="container-fluid" v-show="mcat.display">
@@ -117,10 +117,12 @@
 <script>
 import Multiselect from "vue-multiselect";
 import Axios from "axios";
+import Octicon from "vue-octicon/components/Octicon.vue";
+import "vue-octicon/icons";
 import Navigation from "./Navigation.vue";
-import { DeadlineHelper } from '../_helpers/deadline'
+import { STLunchHelper } from '../_helpers/stlunch'
 export default {
-  components: { Multiselect, Navigation },
+  components: { Multiselect, Navigation, Octicon },
   methods: {
     toggleChildren(obj) {
       if (obj) {
@@ -178,10 +180,10 @@ export default {
       }
       return rc;
       */
-     return !DeadlineHelper.isBefore(null, this.now)
+     return !STLunchHelper.isBefore(null, this.now)
     },
     deadlineFormatted() {
-      var deadline = DeadlineHelper.getDeadline()
+      var deadline = STLunchHelper.getDeadline()
       var fmtDeadline = deadline
       if (deadline.length > 2) {
         fmtDeadline = deadline.substr(0, deadline.length - 2) + ":";

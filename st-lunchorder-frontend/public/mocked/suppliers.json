@@ -157,8 +157,7 @@
                                     "multiple": false,
                                     "value": "",
                                     "selections": [
-                                        "Ja",
-                                        "Nej"
+                                        "Ja"
                                     ],
                                     "additionalPrice": 8                    
                                 }
