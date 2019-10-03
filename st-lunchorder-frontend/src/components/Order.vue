@@ -183,15 +183,7 @@ export default {
      return !STLunchHelper.isBefore(null, this.now)
     },
     deadlineFormatted() {
-      var deadline = STLunchHelper.getDeadline()
-      var fmtDeadline = deadline
-      if (deadline.length > 2) {
-        fmtDeadline = deadline.substr(0, deadline.length - 2) + ":";
-      } else {
-        fmtDeadline = "0:";
-      }
-      fmtDeadline += deadline.substr(-2);
-      return fmtDeadline;
+      return STLunchHelper.getDeadline()
     }
   },
   data() {
