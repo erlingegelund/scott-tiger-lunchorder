@@ -19,16 +19,24 @@
       <div v-for="sup in suppliers" :key="sup.id" class="row">
         <div class="col">
           <div @click="toggleChildren(sup)" class="row-supplier">
-            <span v-if="sup.display" style="margin-left: 5px;"><octicon name="chevron-down"/></span>
-            <span v-else style="margin-left: 5px;"><octicon name="chevron-right"/></span>
+            <span v-if="sup.display" style="margin-left: 5px;">
+              <octicon name="chevron-down" />
+            </span>
+            <span v-else style="margin-left: 5px;">
+              <octicon name="chevron-right" />
+            </span>
             {{sup.name}}
           </div>
           <div class="container-fluid" v-show="sup.display">
             <div v-for="mcat in sup.menu" :key="mcat.catergory" class="row">
               <div class="col">
                 <div @click="toggleChildren(mcat)" class="row-category">
-                  <span v-if="mcat.display"><octicon name="chevron-down"/></span>
-                  <span v-else><octicon name="chevron-right"/></span>
+                  <span v-if="mcat.display">
+                    <octicon name="chevron-down" />
+                  </span>
+                  <span v-else>
+                    <octicon name="chevron-right" />
+                  </span>
                   {{mcat.category}}
                 </div>
                 <div class="container-fluid" v-show="mcat.display">
@@ -76,7 +84,7 @@
                         <span>Kommentar:</span>
                       </div>
                       <div class="col">
-                        <b-form-input type="text" v-model="mitem.comment" />
+                        <b-form-input type="text" v-model="mitem.comment" size="sm"/>
                       </div>
                       <div class="col-md-2" style="text-align: right;">Antal: {{mitem.itemsOrdered}}</div>
                       <div class="col-md-2" style="text-align: right;">
@@ -120,8 +128,9 @@ import Axios from "axios";
 import Octicon from "vue-octicon/components/Octicon.vue";
 import "vue-octicon/icons";
 import Navigation from "./Navigation.vue";
-import { STLunchHelper } from '../_helpers/stlunch'
+import { STLunchHelper } from "../_helpers/stlunch";
 export default {
+  name: "Order",
   components: { Multiselect, Navigation, Octicon },
   methods: {
     toggleChildren(obj) {
@@ -171,19 +180,10 @@ export default {
   },
   computed: {
     isAfterDeadline() {
-      /*
-      var rc = false;
-      var now = new Date();
-      var hm = now.getHours() * 100 + now.getMinutes();
-      if (hm >= this.deadline.valueOf()) {
-        rc = true;
-      }
-      return rc;
-      */
-     return !STLunchHelper.isBefore(null, this.now)
+      return !STLunchHelper.isBefore(null, this.now);
     },
     deadlineFormatted() {
-      return STLunchHelper.getDeadline()
+      return STLunchHelper.getDeadline();
     }
   },
   data() {
@@ -196,8 +196,9 @@ export default {
     };
   },
   created: function() {
-    var self = this
-    setInterval(function() {self.now = Date.now()},30000)
+    // Timer til at sikre computed felt isAfterDeadline er retvisende ift tidspunkt
+    var self = this;
+    setInterval(function() {self.now = Date.now()}, 30000);
 
     Axios.get("/mocked/suppliers.json").then(response => {
       this.suppliers = response.data.suppliers;

@@ -1,0 +1,22 @@
+{
+    "suppliers": [
+        {
+            "id": 1,
+            "name": "Slagter Lise og John",
+            "mail": "slagterjohnoglise@live.dk",
+            "phone": "44332211"
+        },
+        {
+            "id": 2,
+            "name": "Bagels n' Cream",
+            "mail": "ibrahimelhaj@hotmail.com",
+            "phone": "44552200"
+        },
+        {
+            "id": 3,
+            "name": "Coffee & Sandwich",
+            "mail": "kontakt@coffee-sandwich.dk",
+            "phone": "55337788"
+        }
+    ]
+}

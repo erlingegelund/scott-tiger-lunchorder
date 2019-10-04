@@ -33,7 +33,7 @@
                 },
                 {
                     "category": "Smørrebrød",
-                    "display": false,
+                    "display": true,
                     "items": [
                         {
                             "id": 201,
@@ -109,7 +109,7 @@
                                     "multiple": true,
                                     "value": "",
                                     "selections": [
-                                        "Briccolisalat",
+                                        "Broccolisalat",
                                         "Couscous",
                                         "Kikærter",
                                         "Rødbets",

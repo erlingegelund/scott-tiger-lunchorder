@@ -7,6 +7,7 @@ import OrderHistory from '@/components/OrderHistory'
 import MonthlyReport from '@/components/MonthlyReport'
 import Category from '@/components/Category'
 import Supplier from '@/components/Supplier'
+import SupplierMenu from '@/components/SupplierMenu'
 import UserMgmt from '@/components/UserMgmt'
 
 Vue.use(VueRouter)
@@ -21,6 +22,7 @@ export const router = new VueRouter({
         { path: '/monthly', name: "MonthlyReport", component: MonthlyReport, props: true},
         { path: '/category', name: "Category", component: Category, props: true},
         { path: '/supplier', name: "Supplier", component: Supplier, props: true},
+        { path: '/menu/:supplier', name: "Menu", component: SupplierMenu, props: true},
         { path: '/users', name: "UserMgmt", component: UserMgmt, props: true},
         { path: '*', redirect: '/' }
     ]

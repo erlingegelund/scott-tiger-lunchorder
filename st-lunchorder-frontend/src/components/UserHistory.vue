@@ -169,6 +169,7 @@ export default {
   created() {
     var today = new Date();
     this.orderdate = today.toISOString().substr(0, 10);
+    // Timer til at sikre computed felt showUpdateOrder er retvisende ift tidspunkt
     var self = this
     setInterval(function() {self.now = Date.now()},30000)
   }

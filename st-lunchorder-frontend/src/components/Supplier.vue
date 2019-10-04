@@ -23,7 +23,7 @@
             <div
               class="row row-item align-items-center"
               v-for="sup in suppliers"
-              :key="sup.id"
+              :key="sup.vkey"
               @dblclick="showMenu(sup)"
             >
               <div class="col col-md-4">
@@ -62,8 +62,8 @@
                 <span class="btn-delete" @click="del(sup)">
                   <octicon name="x"></octicon>
                 </span>
-                <span style="margin-left: 10px;">
-                  <octicon name="ellipsis" @click="showMenu(sup)"></octicon>
+                <span style="margin-left: 10px;" @click="showMenu(sup)">
+                  <octicon name="ellipsis"></octicon>
                 </span>
               </div>
             </div>
@@ -75,6 +75,7 @@
 </template>
 <script>
 import Navigation from "./Navigation";
+import Axios from "axios";
 import Octicon from "vue-octicon/components/Octicon.vue";
 import { STLunchHelper } from "../_helpers/stlunch";
 import "vue-octicon/icons";
@@ -83,26 +84,7 @@ export default {
   components: { Navigation, Octicon },
   data() {
     return {
-      suppliers: [
-        {
-          id: 1,
-          name: "Slagter Lise og John",
-          mail: "slagterjohnoglise@live.dk",
-          phone: "44332211"
-        },
-        {
-          id: 2,
-          name: "Bagels n' Cream",
-          mail: "ibrahimelhaj@hotmail.com",
-          phone: "44552200"
-        },
-        {
-          id: 3,
-          name: "Coffee & Sandwich",
-          mail: "kontakt@coffee-sandwich.dk",
-          phone: "55337788"
-        }
-      ]
+      suppliers: []
     };
   },
   methods: {
@@ -121,22 +103,40 @@ export default {
     },
     edit(sup) {
       sup.edit = true;
-      sup.id += 0.0001;
+      this.setVKey(sup);
     },
     submit(sup) {
-      sup.id -= 0.0001;
       if (sup.mail && sup.name && this.validateMail(sup)) {
         sup.edit = false;
-        sup.id = parseInt(sup.id.toFixed(0));
       } else {
         sup.submitted = true;
       }
+      this.setVKey(sup);
     },
     del(sup) {
       var filtered = this.suppliers.filter(s => s.id != sup.id);
       this.suppliers = filtered;
     },
-    showMenu(sup) {}
+    showMenu(sup) {
+      this.$router.push({ name: "Menu", params: { supplier: sup.id } });
+    },
+    setVKey(sup) {
+      if (sup.edit != true) sup.edit = false;
+      sup.vkey = sup.id.toString() + ":" + sup.edit.toString();
+      if (sup.submitted === true || sup.submitted === false) {
+        sup.vkey += ":" + sup.submitted.toString();
+      }
+    }
+  },
+  created: function() {
+    Axios.get("/mocked/suppliers-mgmt.json").then(response => {
+      var _suppliers = response.data.suppliers;
+      // opret vkey i hver supplier element - bruges til at kontrollere visning
+      for (var i in _suppliers) {
+        this.setVKey(_suppliers[i]);
+      }
+      this.suppliers = _suppliers;
+    });
   }
 };
 </script>
