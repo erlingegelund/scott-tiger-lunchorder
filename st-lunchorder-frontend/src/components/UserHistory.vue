@@ -163,12 +163,17 @@ export default {
   },
   computed: {
     showUpdateOrder() {
-      return STLunchHelper.isBefore(this.orderdate,this.now)
+      return STLunchHelper.isBeforeDeadline(this.orderdate,this.now)||(Date.parse(this.orderdate) >this.now)
     }
   },
   created() {
-    var today = new Date();
-    this.orderdate = today.toISOString().substr(0, 10);
+    var _orderDate = new Date();
+    var qdate = this.$route.query.orderDate
+    if(qdate) {
+      this.orderdate = qdate
+    } else {
+      this.orderdate = _orderDate.toISOString().substr(0, 10);
+    }
     // Timer til at sikre computed felt showUpdateOrder er retvisende ift tidspunkt
     var self = this
     setInterval(function() {self.now = Date.now()},30000)

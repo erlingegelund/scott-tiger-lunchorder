@@ -10,7 +10,12 @@
       <div class="row" v-show="isAfterDeadline">
         <div class="col">
           <div
-            v-show="isAfterDeadline"
+            v-if="isAfterReopen"
+            class="alert alert-warning"
+            role="alert"
+          >Din bestilling vil være til næste hverdag</div>
+          <div
+            v-else-if="isAfterDeadline"
             class="alert alert-warning"
             role="alert"
           >Det er kun muligt at bestille indtil kl {{deadlineFormatted}}</div>
@@ -84,7 +89,7 @@
                         <span>Kommentar:</span>
                       </div>
                       <div class="col">
-                        <b-form-input type="text" v-model="mitem.comment" size="sm"/>
+                        <b-form-input type="text" v-model="mitem.comment" size="sm" />
                       </div>
                       <div class="col-md-2" style="text-align: right;">Antal: {{mitem.itemsOrdered}}</div>
                       <div class="col-md-2" style="text-align: right;">
@@ -180,10 +185,13 @@ export default {
   },
   computed: {
     isAfterDeadline() {
-      return !STLunchHelper.isBefore(null, this.now);
+      return !STLunchHelper.isBeforeDeadline(null, this.now);
     },
     deadlineFormatted() {
       return STLunchHelper.getDeadline();
+    },
+    isAfterReopen() {
+      return STLunchHelper.isAfterReopen(this.now);
     }
   },
   data() {
@@ -198,7 +206,9 @@ export default {
   created: function() {
     // Timer til at sikre computed felt isAfterDeadline er retvisende ift tidspunkt
     var self = this;
-    setInterval(function() {self.now = Date.now()}, 30000);
+    setInterval(function() {
+      self.now = Date.now();
+    }, 30000);
 
     Axios.get("/mocked/suppliers.json").then(response => {
       this.suppliers = response.data.suppliers;

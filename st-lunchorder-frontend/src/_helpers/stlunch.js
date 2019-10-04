@@ -1,17 +1,19 @@
 export const STLunchHelper = {
     getDeadline,
-    isBefore,
+    isBeforeDeadline,
+    isAfterReopen,
     validateMail
 }
 
 // Deadline klokkeslet for bestilling af frokost - timetal med 2 cifre
 const deadline = "10:00"
+const reopen = "12:00"
 
 function getDeadline() {
     return deadline
 }
 
-function isBefore(dateStr, timeInMillis) {
+function isBeforeDeadline(dateStr, timeInMillis) {
     /*
     Argumenter:
     - dateStr: String, valgfri, Dato
@@ -45,7 +47,20 @@ function isBefore(dateStr, timeInMillis) {
     return before;
 }
 
+function isAfterReopen(timeInMillis) {
+    var dateDate = new Date()
+
+    dateDate.setHours(reopen.substr(0, 2).valueOf())
+    dateDate.setMinutes(reopen.substr(3).valueOf())
+    dateDate.setSeconds(0)
+    dateDate.setMilliseconds(0)
+
+    //console.log(Date.now()+", "+dateDate.getTime()+", "+timeInMillis)
+
+    return dateDate.getTime() < timeInMillis
+}
+
 function validateMail(email) {
-    // Dette regex er ikke korrekt - tillader ikke æøå eller alle tilladt top-domæner
+    // Dette regex er ikke korrekt - tillader ikke æøå og alle tilladt top-domæner
     return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)
 }
