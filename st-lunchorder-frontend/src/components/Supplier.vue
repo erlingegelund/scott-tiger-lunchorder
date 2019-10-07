@@ -30,27 +30,32 @@
                 <b-form-input
                   type="text"
                   size="sm"
-                  v-model="sup.name"
+                  v-model="sup.supplier_name"
                   v-if="sup.edit == true"
                   required
                   :class="{ 'is-invalid': sup.submitted && !sup.name }"
                 ></b-form-input>
-                <span v-else>{{sup.name}}</span>
+                <span v-else>{{sup.supplier_name}}</span>
               </div>
               <div class="col col-md-4">
                 <b-form-input
                   type="email"
                   size="sm"
-                  v-model="sup.mail"
+                  v-model="sup.supplier_email"
                   v-if="sup.edit == true"
                   required
                   :class="{ 'is-invalid': sup.submitted && !validateMail(sup) }"
                 ></b-form-input>
-                <span v-else>{{sup.mail}}</span>
+                <span v-else>{{sup.supplier_email}}</span>
               </div>
               <div class="col col-md-2">
-                <b-form-input type="number" size="sm" v-model="sup.phone" v-if="sup.edit == true"></b-form-input>
-                <span v-else>{{sup.phone}}</span>
+                <b-form-input
+                  type="number"
+                  size="sm"
+                  v-model="sup.supplier_phone"
+                  v-if="sup.edit == true"
+                ></b-form-input>
+                <span v-else>{{sup.supplier_phone}}</span>
               </div>
               <div class="col" style="text-align: right;">
                 <span class="btn-check" v-if="sup.edit == true" @click="submit(sup)">
@@ -80,6 +85,8 @@ import Octicon from "vue-octicon/components/Octicon.vue";
 import { STLunchHelper } from "../_helpers/stlunch";
 import "vue-octicon/icons";
 
+const supplierURL = "/ords/st_lunch/stlunch_suppliers/";
+
 export default {
   components: { Navigation, Octicon },
   data() {
@@ -89,14 +96,14 @@ export default {
   },
   methods: {
     validateMail(supplier) {
-      return STLunchHelper.validateMail(supplier.mail);
+      return STLunchHelper.validateMail(supplier.supplier_email);
     },
     add() {
       var supplier = {
-        id: -this.suppliers.length * 10,
-        name: "",
-        mail: "",
-        phone: "",
+        supplier_id: -this.suppliers.length * 10,
+        supplier_name: "",
+        supplier_email: "",
+        supplier_phone: "",
         edit: true
       };
       this.suppliers.push(supplier);
@@ -106,37 +113,67 @@ export default {
       this.setVKey(sup);
     },
     submit(sup) {
-      if (sup.mail && sup.name && this.validateMail(sup)) {
+      if (sup.supplier_email && sup.supplier_name && this.validateMail(sup)) {
         sup.edit = false;
+        if (sup.supplier_id < 0) {
+          Axios.post(supplierURL, sup).then(
+            response => {
+              sup.supplier_id = response.data.supplier_id;
+            },
+            error => {
+              console.log(error);
+            }
+          );
+        } else {
+          Axios.put(supplierURL + "/" + sup.supplier_id.toString(), sup).then(
+            error => {
+              console.log(error);
+            }
+          );
+        }
       } else {
         sup.submitted = true;
       }
       this.setVKey(sup);
     },
     del(sup) {
-      var filtered = this.suppliers.filter(s => s.id != sup.id);
-      this.suppliers = filtered;
+      Axios.delete(supplierURL + "/" + sup.supplier_id.toString()).then(
+        response => {
+          var filtered = this.suppliers.filter(
+            s => s.supplier_id != sup.supplier_id
+          );
+          this.suppliers = filtered;
+        },
+        error => {
+          console.log(error);
+        }
+      );
     },
     showMenu(sup) {
-      this.$router.push({ name: "Menu", params: { supplier: sup.id } });
+      this.$router.push({ name: "Menu", params: { supplier: sup.supplier_id } });
     },
     setVKey(sup) {
       if (sup.edit != true) sup.edit = false;
-      sup.vkey = sup.id.toString() + ":" + sup.edit.toString();
+      sup.vkey = sup.supplier_id.toString() + ":" + sup.edit.toString();
       if (sup.submitted === true || sup.submitted === false) {
         sup.vkey += ":" + sup.submitted.toString();
       }
     }
   },
   created: function() {
-    Axios.get("/mocked/suppliers-mgmt.json").then(response => {
-      var _suppliers = response.data.suppliers;
-      // opret vkey i hver supplier element - bruges til at kontrollere visning
-      for (var i in _suppliers) {
-        this.setVKey(_suppliers[i]);
+    Axios.get(supplierURL).then(
+      response => {
+        var _suppliers = response.data.items;
+        // opret vkey i hver supplier element - bruges til at kontrollere visning
+        for (var i in _suppliers) {
+          this.setVKey(_suppliers[i]);
+        }
+        this.suppliers = _suppliers;
+      },
+      error => {
+        console.log(error);
       }
-      this.suppliers = _suppliers;
-    });
+    );
   }
 };
 </script>

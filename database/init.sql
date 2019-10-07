@@ -35,7 +35,7 @@ CREATE TABLE stlunch_suppliers (
   supplier_id NUMBER(10)
 , supplier_email VARCHAR2(40) NOT NULL
 , supplier_name VARCHAR2(40) NOT NULL
-, supplier_phone VARCHAR2(40) NOT NULL
+, supplier_phone VARCHAR2(40)
 , CONSTRAINT stlunch_supplier_pk PRIMARY KEY (supplier_id)
 );
 
@@ -94,7 +94,7 @@ ON stlunch_categories
 REFERENCING new AS new
 FOR EACH ROW
 BEGIN
-  IF :new.category_id IS NULL THEN
+  IF :new.category_id IS NULL OR :new.category_id < 0 THEN
     :new.category_id := stlunch_seq.nextval;
   END IF;
 END;
@@ -106,7 +106,7 @@ ON stlunch_suppliers
 REFERENCING new AS new
 FOR EACH ROW
 BEGIN
-  IF :new.supplier_id IS NULL THEN
+  IF :new.supplier_id IS NULL OR :new.supplier_id < 0 THEN
     :new.supplier_id := stlunch_seq.nextval;
   END IF;
 END;
@@ -118,7 +118,7 @@ ON stlunch_supplier_menus
 REFERENCING new AS new
 FOR EACH ROW
 BEGIN
-  IF :new.supplier_menu_id IS NULL THEN
+  IF :new.supplier_menu_id IS NULL OR :new.supplier_menu_id < 0 THEN
     :new.supplier_menu_id := stlunch_seq.nextval;
   END IF;
 END;
