@@ -129,7 +129,7 @@
                       size="sm"
                       :disabled="!m.edit"
                       v-model="opt.multiple"
-                    >Vælg flere</b-form-checkbox>
+                    >Flere muligheder kan vælges</b-form-checkbox>
                     <b-input
                       type="number"
                       placeholder="Pristillæg"

@@ -1,4 +1,4 @@
-<template>
+'<template>
   <div>
     <Navigation :showNavIcon="true"></Navigation>
     <div class="container-fluid">
