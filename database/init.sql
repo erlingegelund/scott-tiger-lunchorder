@@ -168,7 +168,7 @@ BEGIN
                        p_schema => 'ST_LUNCH',
                        p_url_mapping_type => 'BASE_PATH',
                        p_url_mapping_pattern => 'st_lunch',
-                       p_auto_rest_auth => TRUE);
+                       p_auto_rest_auth => FALSE);
 
     commit;
 
@@ -177,21 +177,21 @@ BEGIN
                        p_object => 'STLUNCH_CATEGORIES',
                        p_object_type => 'TABLE',
                        p_object_alias => 'stlunch_categories',
-                       p_auto_rest_auth => TRUE);
+                       p_auto_rest_auth => FALSE);
 
     ORDS.ENABLE_OBJECT(p_enabled => TRUE,
                        p_schema => 'ST_LUNCH',
                        p_object => 'STLUNCH_USERS',
                        p_object_type => 'TABLE',
                        p_object_alias => 'stlunch_users',
-                       p_auto_rest_auth => TRUE);
+                       p_auto_rest_auth => FALSE);
 
     ORDS.ENABLE_OBJECT(p_enabled => TRUE,
                        p_schema => 'ST_LUNCH',
                        p_object => 'STLUNCH_SUPPLIERS',
                        p_object_type => 'TABLE',
                        p_object_alias => 'stlunch_suppliers',
-                       p_auto_rest_auth => TRUE);
+                       p_auto_rest_auth => FALSE);
 
     commit;
 
