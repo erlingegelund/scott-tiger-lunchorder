@@ -88,7 +88,7 @@ export default {
               console.log(error);
             });
         } else {
-          Axios.put(categoryURL + "/" + cat.category_id, cat).catch(error => {
+          Axios.put(categoryURL + cat.category_id, cat).catch(error => {
             console.log(error);
           });
         }
@@ -100,7 +100,7 @@ export default {
       this.setVKey(cat);
     },
     del(cat) {
-      Axios.delete(categoryURL + "/" + cat.category_id)
+      Axios.delete(categoryURL + cat.category_id)
         .then(response => {
           var filtered = this.categories.filter(
             c => c.category_id != cat.category_id

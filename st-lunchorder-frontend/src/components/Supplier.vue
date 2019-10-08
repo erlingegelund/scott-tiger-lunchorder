@@ -123,7 +123,7 @@ export default {
               console.log(error);
             });
         } else {
-          Axios.put(supplierURL + "/" + sup.supplier_id.toString(), sup).catch(
+          Axios.put(supplierURL + sup.supplier_id.toString(), sup).catch(
             error => {
               console.log(error);
             }
@@ -137,7 +137,7 @@ export default {
       this.setVKey(sup);
     },
     del(sup) {
-      Axios.delete(supplierURL + "/" + sup.supplier_id.toString())
+      Axios.delete(supplierURL + sup.supplier_id.toString())
         .then(response => {
           var filtered = this.suppliers.filter(
             s => s.supplier_id != sup.supplier_id
