@@ -128,6 +128,7 @@ export default {
         for (var i in categories) {
           this.setVKey(categories[i]);
         }
+        categories.sort((c1,c2) => (c1.category_name > c2.category_name) ? 1 : -1)
         this.categories = categories;
       })
       .catch(error => {
