@@ -20,34 +20,34 @@
                 </span>
               </div>
             </div>
-            <div class="row row-item align-items-center" v-for="user in users" :key="user.id">
+            <div class="row row-item align-items-center" v-for="user in users" :key="user.vkey">
               <div class="col col-md-4">
                 <b-form-input
                   type="text"
                   size="sm"
-                  v-model="user.mail"
+                  v-model="user.user_email"
                   v-if="user.edit == true"
                   required
                   :class="{ 'is-invalid': user.submitted && !validateMail(user) }"
                 ></b-form-input>
-                <span v-else>{{user.mail}}</span>
+                <span v-else>{{user.user_email}}</span>
               </div>
               <div class="col col-md-4">
                 <b-form-input
                   type="email"
                   size="sm"
-                  v-model="user.name"
+                  v-model="user.user_name"
                   v-if="user.edit == true"
                   required
-                  :class="{ 'is-invalid': user.submitted && !user.name }"
+                  :class="{ 'is-invalid': user.submitted && !user.user_name }"
                 ></b-form-input>
-                <span v-else>{{user.name}}</span>
+                <span v-else>{{user.user_name}}</span>
               </div>
               <div class="col col-md-2" style="text-align: center;">
                 <b-form-checkbox
-                  v-model="user.administrator"
-                  value="true"
-                  unchecked-value="false"
+                  v-model="user.administrator_yn"
+                  value="Y"
+                  unchecked-value="N"
                   :disabled="user.edit != true"
                   switch
                 />
@@ -72,92 +72,86 @@
 </template>
 <script>
 import Navigation from "./Navigation";
-import Octicon from "vue-octicon/components/Octicon.vue"
-import { STLunchHelper } from '../_helpers/stlunch'
+import Axios from "axios";
+import Octicon from "vue-octicon/components/Octicon.vue";
+import { STLunchHelper } from "../_helpers/stlunch";
 import "vue-octicon/icons";
+
+const userURL = "/ords/st_lunch/stlunch_users/";
+const activeUserURL = "/ords/st_lunch/stlunch_active_users/"
 
 export default {
   components: { Navigation, Octicon },
   data() {
     return {
-      users: [
-        {
-          id: 1,
-          mail: "helle.bohn@scott-tiger.dk",
-          name: "Helle Bohn",
-          administrator: "true"
-        },
-        {
-          id: 2,
-          mail: "maria.kragh@scott-tiger.dk",
-          name: "Maria Kragh",
-          administrator: "true"
-        },
-        {
-          id: 3,
-          mail: "lykke.luimes@scott-tiger.dk",
-          name: "Lykke Luimes",
-          administrator: "true"
-        },
-        {
-          id: 4,
-          mail: "torben.bolvig@scott-tiger.dk",
-          name: "Torben Bolvig",
-          administrator: "false"
-        },
-        {
-          id: 5,
-          mail: "ole.kramer@scott-tiger.dk",
-          name: "Ole Kramer",
-          administrator: "false"
-        },
-        {
-          id: 6,
-          mail: "tom.slivsgaard@scott-tiger.dk",
-          name: "Tom Slivsgaard",
-          administrator: "false"
-        },
-        {
-          id: 7,
-          mail: "maria.daugaard@scott-tiger.dk",
-          name: "Maria Cecilie Daugaard",
-          administrator: "false"
-        }
-      ]
+      users: []
     };
   },
   methods: {
     validateMail(user) {
-      return STLunchHelper.validateMail(user.mail)
+      return STLunchHelper.validateMail(user.user_email);
     },
     add() {
       var user = {
-        id: -this.users.length,
-        mail: "",
-        name: "",
-        administrator: false,
+        user_id: -this.users.length,
+        user_email: "",
+        user_name: "",
+        administrator_yn: "N",
         edit: true
       };
       this.users.push(user);
     },
     edit(user) {
       user.edit = true;
-      user.id += 0.0001;
       user.submitted = false;
+      this.setVKey(user);
     },
     submit(user) {
-      user.id -= 0.0001;
-      if (user.mail && user.name && this.validateMail(user)) {
+      if (user.user_email && user.user_name && this.validateMail(user)) {
+        if (user.user_id < 0) {
+          Axios.post(userURL, user)
+            .then(response => {
+              user.user_id = response.data.user_id;
+            })
+            .catch(error => console.log(error));
+        } else {
+          Axios.put(userURL + user.user_id.toString(), user).catch(error =>
+            console.log(error)
+          );
+        }
         user.edit = false;
-        user.id = parseInt(user.id.toFixed(0))
+        user.submitted = false;
       } else {
         user.submitted = true;
       }
+      this.setVKey(user);
     },
     del(user) {
-      var filtered = this.users.filter(u => u.id != user.id);
-      this.users = filtered;
+      user.inactive_yn = 'Y'
+      Axios.put(userURL + user.user_id.toString(), user)
+        .then(response => {
+          var filtered = this.users.filter(u => u.user_id != user.user_id);
+          this.users = filtered;
+        })
+        .catch(error => console.log(error));
+    },
+    setVKey(user) {
+      if (user.edit != true) user.edit = false;
+      user.vkey = user.user_id.toString() + ":" + user.edit.toString();
+      if (user.submitted === true || user.submitted === false) {
+        user.vkey += ":" + user.submitted.toString();
+      }
     }
+  },
+  created: function() {
+    Axios.get(activeUserURL).then(response => {
+      var users = response.data.items;
+      for (var i in users) {
+        this.setVKey(users[i]);
+      }
+      users.sort((u1, u2) => (u1.user_name > u2.user_name ? 1 : -1));
+      this.users = users;
+    });
   }
 };
 </script>

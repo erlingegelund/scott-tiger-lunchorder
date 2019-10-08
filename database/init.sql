@@ -82,7 +82,7 @@ ON stlunch_users
 REFERENCING new AS new
 FOR EACH ROW
 BEGIN
-  IF :new.user_id IS NULL THEN
+  IF :new.user_id IS NULL OR :new.user_id < 0 THEN
     :new.user_id := stlunch_seq.nextval;
   END IF;
 END;
@@ -130,7 +130,7 @@ ON stlunch_menu_options
 REFERENCING new AS new
 FOR EACH ROW
 BEGIN
-  IF :new.menu_option_id IS NULL THEN
+  IF :new.menu_option_id IS NULL OR :new.menu_option_id < 0 THEN
     :new.menu_option_id := stlunch_seq.nextval;
   END IF;
 END;
@@ -142,11 +142,15 @@ ON stlunch_orders
 REFERENCING new AS new
 FOR EACH ROW
 BEGIN
-  IF :new.order_id IS NULL THEN
+  IF :new.order_id IS NULL OR :new.order_id < 0 THEN
     :new.order_id := stlunch_seq.nextval;
   END IF;
 END;
 /
+
+CREATE OR REPLACE VIEW stlunch_active_users AS
+  SELECT * FROM stlunch_users WHERE nvl(inactive_yn,'N') = 'N';
+  
 -- Installer APEX 18.2
 --   ADMIN e-mail: efe@scott-tiger.dk
 --   Admin passwd: BremboM4;mono
