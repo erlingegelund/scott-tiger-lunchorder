@@ -114,43 +114,45 @@ export default {
     },
     submit(sup) {
       if (sup.supplier_email && sup.supplier_name && this.validateMail(sup)) {
-        sup.edit = false;
         if (sup.supplier_id < 0) {
-          Axios.post(supplierURL, sup).then(
-            response => {
+          Axios.post(supplierURL, sup)
+            .then(response => {
               sup.supplier_id = response.data.supplier_id;
-            },
-            error => {
+            })
+            .catch(error => {
               console.log(error);
-            }
-          );
+            });
         } else {
-          Axios.put(supplierURL + "/" + sup.supplier_id.toString(), sup).then(
+          Axios.put(supplierURL + "/" + sup.supplier_id.toString(), sup).catch(
             error => {
               console.log(error);
             }
           );
         }
+        sup.edit = false;
+        sup.submitted = false;
       } else {
         sup.submitted = true;
       }
       this.setVKey(sup);
     },
     del(sup) {
-      Axios.delete(supplierURL + "/" + sup.supplier_id.toString()).then(
-        response => {
+      Axios.delete(supplierURL + "/" + sup.supplier_id.toString())
+        .then(response => {
           var filtered = this.suppliers.filter(
             s => s.supplier_id != sup.supplier_id
           );
           this.suppliers = filtered;
-        },
-        error => {
+        })
+        .catch(error => {
           console.log(error);
-        }
-      );
+        });
     },
     showMenu(sup) {
-      this.$router.push({ name: "Menu", params: { supplier: sup.supplier_id } });
+      this.$router.push({
+        name: "Menu",
+        params: { supplier: sup.supplier_id }
+      });
     },
     setVKey(sup) {
       if (sup.edit != true) sup.edit = false;
@@ -161,19 +163,18 @@ export default {
     }
   },
   created: function() {
-    Axios.get(supplierURL).then(
-      response => {
+    Axios.get(supplierURL)
+      .then(response => {
         var _suppliers = response.data.items;
         // opret vkey i hver supplier element - bruges til at kontrollere visning
         for (var i in _suppliers) {
           this.setVKey(_suppliers[i]);
         }
         this.suppliers = _suppliers;
-      },
-      error => {
+      })
+      .catch(error => {
         console.log(error);
-      }
-    );
+      });
   }
 };
 </script>

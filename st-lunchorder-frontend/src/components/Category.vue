@@ -18,17 +18,17 @@
                 </span>
               </div>
             </div>
-            <div class="row row-item align-items-center" v-for="cat in categories" :key="cat.id">
+            <div class="row row-item align-items-center" v-for="cat in categories" :key="cat.vkey">
               <div class="col col-md-10">
                 <b-form-input
                   type="text"
                   size="sm"
-                  v-model="cat.name"
+                  v-model="cat.category_name"
                   v-if="cat.edit == true"
                   required
                   :class="{ 'is-invalid': cat.submitted && !cat.password }"
                 ></b-form-input>
-                <span v-else>{{cat.name}}</span>
+                <span v-else>{{cat.category_name}}</span>
               </div>
               <div class="col" style="text-align: right;">
                 <span class="btn-check" v-if="cat.edit" @click="submit(cat)">
@@ -50,45 +50,89 @@
 </template>
 <script>
 import Navigation from "./Navigation";
+import Axios from "axios";
 import Octicon from "vue-octicon/components/Octicon.vue";
 import "vue-octicon/icons";
+
+const categoryURL = "/ords/st_lunch/stlunch_categories/";
 
 export default {
   components: { Navigation, Octicon },
   data() {
     return {
-      categories: [
-        { id: 1, name: "Salater" },
-        { id: 2, name: "Smørrebrød" },
-        { id: 3, name: "Bagels" },
-        { id: 4, name: "Sandwich" },
-        { id: 5, name: "Boller" }
-      ]
+      categories: []
     };
   },
   methods: {
     add() {
-      var category = { id: -this.categories.length * 10, name: "", edit: true };
+      var category = {
+        category_id: -this.categories.length * 10,
+        category_name: "",
+        edit: true
+      };
+      this.setVKey(category);
       this.categories.push(category);
     },
     edit(cat) {
       cat.edit = true;
-      cat.id += 0.0001;
-      cat.submitted = false;
+      this.setVKey(cat);
     },
     submit(cat) {
-      cat.id -= 0.0001
-      if (cat.name) {
-        cat.id = parseInt(cat.id.toFixed(0))
+      if (cat.category_name) {
+        if (cat.category_id < 0) {
+          Axios.post(categoryURL, cat)
+            .then(response => {
+              cat.category_id = response.data.category_id;
+            })
+            .catch(error => {
+              console.log(error);
+            });
+        } else {
+          Axios.put(categoryURL + "/" + cat.category_id, cat).catch(error => {
+            console.log(error);
+          });
+        }
         cat.edit = false;
+        cat.submitted = false;
       } else {
         cat.submitted = true;
       }
+      this.setVKey(cat);
     },
     del(cat) {
-      var filtered = this.categories.filter(c => c.id != cat.id);
-      this.categories = filtered;
+      Axios.delete(categoryURL + "/" + cat.category_id)
+        .then(response => {
+          var filtered = this.categories.filter(
+            c => c.category_id != cat.category_id
+          );
+          this.categories = filtered;
+        })
+        .catch(error => console.log(error));
+    },
+    setVKey(cat) {
+      var vkey = cat.category_id.toString() + ":";
+      if (cat.edit === true || cat.edit === false) {
+        vkey += cat.edit.toString();
+      }
+      vkey += ":";
+      if (cat.submitted) {
+        vkey += cat.submitted.toString();
+      }
+      cat.vkey = vkey;
     }
+  },
+  created: function() {
+    Axios.get(categoryURL)
+      .then(response => {
+        var categories = response.data.items;
+        for (var i in categories) {
+          this.setVKey(categories[i]);
+        }
+        this.categories = categories;
+      })
+      .catch(error => {
+        console.log(error);
+      });
   }
 };
 </script>
