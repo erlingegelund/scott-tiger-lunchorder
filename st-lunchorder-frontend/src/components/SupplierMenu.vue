@@ -4,7 +4,7 @@
     <div class="container-fluid">
       <div class="row component-header">
         <div class="col">
-          <h2>Menu: {{supplier.name}}</h2>
+          <h2>Menu: {{supplier.supplier_name}}</h2>
         </div>
       </div>
       <div class="row" style="margin-top: 20px;">
@@ -24,19 +24,19 @@
             </div>
             <div class="row" v-for="m in menu" :key="m.vkey">
               <div class="col">
-                <div class="row row-item" @click="display(m)">
-                  <div class="col col-md-2">
+                <div class="row row-item">
+                  <div class="col col-md-2" @click="display(m)">
                     <span v-if="m.edit">
                       <b-input-group>
                         <span style="margin-top: 5px;">
                           <octicon name="chevron-down" />
                         </span>
                         <b-form-select
-                          v-model="m.category"
+                          v-model="m.category_id"
                           size="sm"
                           :options="categories"
                           @change="setCategoryName(m)"
-                          :class="{ 'is-invalid': m.submitted && !m.category }"
+                          :class="{ 'is-invalid': m.submitted && !m.category_id }"
                         ></b-form-select>
                       </b-input-group>
                     </span>
@@ -44,16 +44,16 @@
                       <span>
                         <octicon name="chevron-down" />
                       </span>
-                      {{m.categoryName}}
+                      {{m.category_name}}
                     </span>
                     <span v-else>
                       <span style="margin-right: 2px;">
                         <octicon name="chevron-right" />
                       </span>
-                      {{m.categoryName}}
+                      {{m.category_name}}
                     </span>
                   </div>
-                  <div class="col col-md-6">
+                  <div class="col col-md-6" @click="display(m)">
                     <span v-if="m.edit">
                       <b-form-input
                         type="text"
@@ -65,7 +65,7 @@
                     </span>
                     <span v-else>{{m.description}}</span>
                   </div>
-                  <div class="col col-md-1">
+                  <div class="col col-md-1" @click="display(m)">
                     <span v-if="m.edit">
                       <b-form-input
                         type="number"
@@ -102,7 +102,7 @@
                 <div
                   class="row align-items-start compact-row"
                   v-for="opt in m.options"
-                  :key="opt.id"
+                  :key="opt.menu_option_id"
                   v-show="m.display || m.edit"
                 >
                   <div class="col col-md-1" />
@@ -117,18 +117,18 @@
                       :class="{ 'is-invalid': m.submitted && !opt.description }"
                     />
                     <b-form-checkbox
-                      value="true"
-                      unchecked-value="false"
+                      value="Y"
+                      unchecked-value="N"
                       size="sm"
                       :disabled="!m.edit"
-                      v-model="opt.mandatory"
+                      v-model="opt.mandatory_yn"
                     >Obligatorisk</b-form-checkbox>
                     <b-form-checkbox
-                      value="true"
-                      unchecked-value="false"
+                      value="Y"
+                      unchecked-value="N"
                       size="sm"
                       :disabled="!m.edit"
-                      v-model="opt.multiple"
+                      v-model="opt.multiple_yn"
                     >Flere muligheder kan vælges</b-form-checkbox>
                     <b-input
                       type="number"
@@ -165,136 +165,81 @@
 </template>
 <script>
 import Navigation from "./Navigation";
+import Axios from "axios";
 import Octicon from "vue-octicon/components/Octicon.vue";
+import { STLunchHelper } from "../_helpers/stlunch";
+
+const supSupplierMenuURL =
+  "/ords/st_lunch/stlunch_suppliers/stlunch_supplier_menus/";
+const menuOptionsURL =
+  "/ords/st_lunch/stlunch_supplier_menus/stlunch_menu_options/";
 
 export default {
   name: "Menu",
   components: { Navigation, Octicon },
   data() {
     return {
-      supplier: {
-        id: 1,
-        name: "Slagter Lise og John",
-        mail: "slagterjohnoglise@live.dk",
-        phone: "44332211"
-      },
-      menu: [
-        {
-          id: 201,
-          description: "Fiskefilet med rejer",
-          price: 35.0,
-          options: [],
-          category: 2,
-          categoryName: "Smørrebrød",
-          vkey: "201"
-        },
-        {
-          id: 202,
-          description: "Fiskefilet med remoulade",
-          price: 15.0,
-          options: [],
-          category: 2,
-          categoryName: "Smørrebrød",
-          vkey: "202"
-        },
-        {
-          id: 203,
-          description: "Frikadelle med surt",
-          price: 13.0,
-          options: [],
-          category: 2,
-          categoryName: "Smørrebrød",
-          vkey: "203"
-        },
-        {
-          id: 204,
-          description: "Kalkunbryst med karrydressing",
-          price: 13.0,
-          options: [],
-          category: 2,
-          categoryName: "Smørrebrød",
-          vkey: "204"
-        },
-        {
-          id: 205,
-          description: "Salat med kød",
-          price: 35.0,
-          options: [
-            {
-              id: 499,
-              description: "Kød",
-              mandatory: true,
-              multiple: false,
-              selectables: "Kylling\nSkinke\nTun",
-              additionalPrice: null
-            }
-          ],
-          category: 1,
-          categoryName: "Salater",
-          vkey: "205"
-        }
-      ],
-      categories: [
-        { value: 1, text: "Salater" },
-        { value: 2, text: "Smørrebrød" },
-        { value: 3, text: "Bagels" },
-        { value: 4, text: "Sandwich" },
-        { value: 5, text: "Boller" }
-      ]
+      supplier: { supplier_id: "", supplier_name: "" },
+      menu: [],
+      categories: []
     };
   },
   methods: {
     setVKey(mitem) {
+      var options = 0;
+      if (mitem.options) options = mitem.options.length;
       if (mitem.edit != true) mitem.edit = false;
       if (mitem.display != true) mitem.display = false;
-      mitem.vkey =
-        mitem.id.toString() +
-        ":" +
-        mitem.edit.toString() +
-        ":" +
-        mitem.display.toString();
+      mitem.vkey = mitem.supplier_menu_id.toString() + ":" + options;
+      ":" + mitem.edit.toString() + ":" + mitem.display.toString();
       if (mitem.submitted === true || mitem.submitted === false) {
         mitem.vkey += ":" + mitem.submitted.toString();
       }
     },
     setCategoryName(mitem) {
       var categoryName = "Ukendt";
-      var filtered = this.categories.filter(c => c.value == mitem.category);
-      if (filtered) categoryName = filtered[0].text;
+      var filtered = this.categories.filter(c => c.value == mitem.category_id);
+      if (filtered && filtered.length > 0) categoryName = filtered[0].text;
 
-      mitem.categoryName = categoryName;
+      mitem.category_name = categoryName;
     },
     display(mitem) {
       if (mitem.edit !== true) {
+        mitem.edit = false;
         if (mitem.display === true) {
           mitem.display = false;
         } else {
           mitem.display = true;
         }
-        this.setVKey(mitem);
       }
+      this.setVKey(mitem);
+      this.fetchMenuOptions(mitem, mitem.display, mitem.edit, null);
     },
     add() {
       var m = {
-        id: -this.menu.length,
+        supplier_menu_id: -this.menu.length,
+        supplier_id: this.supplier.supplier_id,
         description: "",
         price: 0,
         options: [],
-        category: null,
-        categoryName: null,
+        category_id: null,
+        category_name: null,
         edit: true
       };
-      this.setVKey(m);
       this.menu.push(m);
+      this.setVKey(m);
     },
     edit(mitem) {
-      mitem.edit = true;
-      mitem.submitted = false;
-      this.setVKey(mitem);
+      if (mitem.edit === true || mitem.edit === false) {
+        mitem.edit = !mitem.edit;
+      } else {
+        mitem.edit = true;
+      }
+      this.fetchMenuOptions(mitem, !mitem.edit, mitem.edit, false);
     },
     submit(mitem) {
       var allMandatoryFilled =
-        mitem.category && mitem.description && mitem.price;
+        mitem.category_id && mitem.description && mitem.price;
       for (var i in mitem.options) {
         allMandatoryFilled =
           allMandatoryFilled &&
@@ -303,15 +248,50 @@ export default {
       }
       if (allMandatoryFilled) {
         mitem.edit = false;
-        mitem.price = Number.parseInt(mitem.price)
+        mitem.price = Number.parseInt(mitem.price);
       } else {
         mitem.submitted = true;
       }
       this.setVKey(mitem);
+      // Do REST
+      if (mitem.supplier_menu_id < 0) {
+        Axios.post(STLunchHelper.supplierMenuURL, mitem).then(response => {
+          mitem.supplier_menu_id = response.data.supplier_menu_id;
+          for (var i in mitem.options) {
+            mitem.options[i].supplier_menu_id = mitem.supplier_menu_id;
+            Axios.post(STLunchHelper.menuOptionsURL, mitem.options[i]).then(
+              optresponse => {
+                mitem.options[i].menu_option_id =
+                  optresponse.data.menu_option_id;
+              }
+            );
+          }
+        });
+      } else {
+        Axios.put(
+          STLunchHelper.supplierMenuURL + mitem.supplier_menu_id,
+          mitem
+        );
+        for (var i in mitem.options) {
+          if (option.menu_option_id < 0) {
+            Axios.post(STLunchHelper.menuOptionsURL, option).then(response => {
+              option.menu_option_id = response.data.menu_option_id;
+            });
+          } else {
+            Axios.put(
+              STLunchHelper.menuOptionsURL + option.menu_option_id,
+              option
+            );
+          }
+        }
+      }
     },
     del(mitem) {
-      var filtered = this.menu.filter(m => m.id != mitem.id);
+      var filtered = this.menu.filter(
+        m => m.supplier_menu_id != mitem.supplier_menu_id
+      );
       this.menu = filtered;
+      Axios.delete(STLunchHelper.supplierMenuURL + mitem.supplier_menu_id);
     },
     addOption(m) {
       var newId = -99;
@@ -319,25 +299,82 @@ export default {
         newId = (m.options.length + 1) * -100;
       }
       var opt = {
-        id: newId,
+        menu_option_id: newId,
+        supplier_menu_id: m.supplier_menu_id,
         description: "",
-        mandatory: false,
-        multiple: false,
+        mandatory_yn: "N",
+        multiple_yn: "N",
         selectables: "",
         additionalPrice: null
       };
       m.options.push(opt);
+      this.setVKey(m);
     },
     delOption(m, opt) {
-      var filtered = m.options.filter(o => o.id != opt.id);
+      var filtered = m.options.filter(
+        o => o.menu_option_id != opt.menu_option_id
+      );
       m.options = filtered;
+      this.setVKey(m);
+      Axios.delete(STLunchHelper.menuOptionsURL + option.menu_option_id);
+    },
+    fetchCategories() {
+      return Axios.get(STLunchHelper.categoryURL);
+    },
+    fetchMenu(supplierId) {
+      return Axios.get(supSupplierMenuURL + supplierId);
+    },
+    fetchMenuOptions(m, display, edit, submitted) {
+      if (!m.options) {
+        Axios.get(menuOptionsURL + m.supplier_menu_id).then(response => {
+          m.options = response.data.items;
+          m.display = display;
+          m.edit = edit;
+          m.submitted = submitted;
+          this.setVKey(m);
+        });
+      }
+      // else {
+      //   m.display = display;
+      //   m.edit = edit;
+      //   m.submitted = submitted;
+      //   this.setVKey(m);
+      // }
     }
   },
   created: function() {
-    // opret vkey i hver menu element - bruges til at kontrollere visning
-    for (var i in this.menu) {
-      this.setVKey(this.menu[i]);
-    }
+    var supplierId = this.$route.params.supplier;
+    var _self = this;
+
+    Axios.get(STLunchHelper.supplierURL + supplierId)
+      .then(response => {
+        this.supplier.supplier_name = response.data.supplier_name;
+        this.supplier.supplier_id = supplierId;
+      })
+      .catch(error => console.log(error));
+
+    // samtidig kald af REST - nødvendig fordi menu manipuleres på baggrund af categories
+    Axios.all([this.fetchCategories(), this.fetchMenu(supplierId)]).then(
+      Axios.spread(function(fcat, fmenu) {
+        var dbCat = fcat.data.items;
+        // Omdøb attributter i categories for at kunne anvendes i b-form-select
+        var catJSON = JSON.stringify(dbCat).replace(
+          /\"category_id\":/g,
+          '"value":'
+        );
+        var catJSON = catJSON.replace(/\"category_name\":/g, '"text":');
+        _self.categories = JSON.parse(catJSON);
+        _self.categories.sort((c1, c2) => (c1.text > c2.text ? 1 : -1));
+
+        var menuItems = fmenu.data.items;
+        // Sæt vkey og category_name i menu
+        for (var i in menuItems) {
+          _self.setVKey(menuItems[i]);
+          _self.setCategoryName(menuItems[i]);
+        }
+        _self.menu = menuItems;
+      })
+    );
   }
 };
 </script>
