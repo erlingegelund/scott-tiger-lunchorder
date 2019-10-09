@@ -217,7 +217,7 @@ export default {
     },
     add() {
       var m = {
-        supplier_menu_id: -this.menu.length,
+        supplier_menu_id: (this.menu.length+1) * -1,
         supplier_id: this.supplier.supplier_id,
         description: "",
         price: 0,
@@ -248,43 +248,13 @@ export default {
       }
       if (allMandatoryFilled) {
         mitem.edit = false;
+        mitem.display = true;
         mitem.price = Number.parseInt(mitem.price);
+        this.insertUpdate(mitem)
       } else {
         mitem.submitted = true;
       }
       this.setVKey(mitem);
-      // Do REST
-      if (mitem.supplier_menu_id < 0) {
-        Axios.post(STLunchHelper.supplierMenuURL, mitem).then(response => {
-          mitem.supplier_menu_id = response.data.supplier_menu_id;
-          for (var i in mitem.options) {
-            mitem.options[i].supplier_menu_id = mitem.supplier_menu_id;
-            Axios.post(STLunchHelper.menuOptionsURL, mitem.options[i]).then(
-              optresponse => {
-                mitem.options[i].menu_option_id =
-                  optresponse.data.menu_option_id;
-              }
-            );
-          }
-        });
-      } else {
-        Axios.put(
-          STLunchHelper.supplierMenuURL + mitem.supplier_menu_id,
-          mitem
-        );
-        for (var i in mitem.options) {
-          if (option.menu_option_id < 0) {
-            Axios.post(STLunchHelper.menuOptionsURL, option).then(response => {
-              option.menu_option_id = response.data.menu_option_id;
-            });
-          } else {
-            Axios.put(
-              STLunchHelper.menuOptionsURL + option.menu_option_id,
-              option
-            );
-          }
-        }
-      }
     },
     del(mitem) {
       var filtered = this.menu.filter(
@@ -316,7 +286,7 @@ export default {
       );
       m.options = filtered;
       this.setVKey(m);
-      Axios.delete(STLunchHelper.menuOptionsURL + option.menu_option_id);
+      Axios.delete(STLunchHelper.menuOptionsURL + opt.menu_option_id);
     },
     fetchCategories() {
       return Axios.get(STLunchHelper.categoryURL);
@@ -334,12 +304,41 @@ export default {
           this.setVKey(m);
         });
       }
-      // else {
-      //   m.display = display;
-      //   m.edit = edit;
-      //   m.submitted = submitted;
-      //   this.setVKey(m);
-      // }
+    }, 
+    insertUpdate(mitem) {
+      // Do REST
+      if (mitem.supplier_menu_id < 0) {
+        Axios.post(STLunchHelper.supplierMenuURL, mitem).then(response => {
+          mitem.supplier_menu_id = response.data.supplier_menu_id;
+          for (var i in mitem.options) {
+            mitem.options[i].supplier_menu_id = mitem.supplier_menu_id;
+            Axios.post(STLunchHelper.menuOptionsURL, mitem.options[i]).then(
+              optresponse => {
+                mitem.options[i].menu_option_id =
+                  optresponse.data.menu_option_id;
+              }
+            );
+          }
+          this.setVKey(mitem);
+        });
+      } else {
+        Axios.put(
+          STLunchHelper.supplierMenuURL + mitem.supplier_menu_id,
+          mitem
+        );
+        for (var i in mitem.options) {
+          if (mitem.options[i].menu_option_id < 0) {
+            Axios.post(STLunchHelper.menuOptionsURL, mitem.options[i]).then(response => {
+              mitem.options[i].menu_option_id = response.data.menu_option_id;
+            });
+          } else {
+            Axios.put(
+              STLunchHelper.menuOptionsURL + mitem.options[i].menu_option_id,
+              mitem.options[i]
+            );
+          }
+        }
+      }
     }
   },
   created: function() {

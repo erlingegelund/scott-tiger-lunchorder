@@ -53,12 +53,15 @@ CREATE TABLE stlunch_supplier_menus (
 CREATE TABLE stlunch_menu_options (
   menu_option_id NUMBER(10)
 , supplier_menu_id NUMBER(10) NOT NULL
+, description VARCHAR2(40) NOT NULL
 , mandatory_yn CHAR(1) DEFAULT 'N' NOT NULL
-, multiple__yn CHAR(1) DEFAULT 'N' NOT NULL
+, multiple_yn CHAR(1) DEFAULT 'N' NOT NULL
 , additional_price NUMBER(6,2)
-, selections VARCHAR2(4000) NOT NULL
+, selectables VARCHAR2(4000) NOT NULL
 , CONSTRAINT stlunch_menu_option_pk PRIMARY KEY (menu_option_id)
-, CONSTRAINT stlunch_menu_option_fk FOREIGN KEY (supplier_menu_id) REFERENCES stlunch_supplier_menus (supplier_menu_id)
+, CONSTRAINT stlunch_menu_option_fk FOREIGN KEY (supplier_menu_id) 
+    REFERENCES stlunch_supplier_menus (supplier_menu_id) 
+    ON DELETE CASCADE
 );
 
 CREATE TABLE stlunch_orders (
@@ -196,6 +199,43 @@ BEGIN
                        p_object_type => 'TABLE',
                        p_object_alias => 'stlunch_suppliers',
                        p_auto_rest_auth => FALSE);
+
+    ORDS.ENABLE_OBJECT(p_enabled => TRUE,
+                       p_schema => 'ST_LUNCH',
+                       p_object => 'STLUNCH_ACTIVE_USERS',
+                       p_object_type => 'VIEW',
+                       p_object_alias => 'stlunch_active_users',
+                       p_auto_rest_auth => FALSE);
+
+    ORDS.ENABLE_OBJECT(p_enabled => TRUE,
+                       p_schema => 'ST_LUNCH',
+                       p_object => 'STLUNCH_SUPPLIER_MENUS',
+                       p_object_type => 'TABLE',
+                       p_object_alias => 'stlunch_supplier_menus',
+                       p_auto_rest_auth => FALSE);
+
+    ORDS.ENABLE_OBJECT(p_enabled => TRUE,
+                       p_schema => 'ST_LUNCH',
+                       p_object => 'STLUNCH_MENU_OPTIONS',
+                       p_object_type => 'TABLE',
+                       p_object_alias => 'stlunch_menu_options',
+                       p_auto_rest_auth => FALSE);
+
+    ORDS.define_service(p_module_name    => 'stlunch_sup_supplier_menus',
+                        p_base_path      => 'stlunch_suppliers/',
+                        p_pattern        => 'stlunch_supplier_menus/:supp_id',
+                        p_method         => 'GET',
+                        p_source_type    => ORDS.source_type_collection_feed,
+                        p_source         => 'SELECT * FROM stlunch_supplier_menus WHERE supplier_id = :supp_id ORDER BY description',
+                        p_items_per_page => 0);
+
+    ORDS.define_service(p_module_name    => 'stlunch_sup_menu_options',
+                        p_base_path      => 'stlunch_supplier_menus/',
+                        p_pattern        => 'stlunch_menu_options/:menu_id',
+                        p_method         => 'GET',
+                        p_source_type    => ORDS.source_type_collection_feed,
+                        p_source         => 'SELECT * FROM stlunch_menu_options WHERE supplier_menu_id = :menu_id ORDER BY description',
+                        p_items_per_page => 0);
 
     commit;
 
