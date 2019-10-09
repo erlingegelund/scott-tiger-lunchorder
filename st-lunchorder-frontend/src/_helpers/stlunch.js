@@ -1,16 +1,22 @@
-export const STLunchHelper = {
-    getDeadline,
-    isBeforeDeadline,
-    isAfterReopen,
-    validateMail
-}
-
 // Deadline klokkeslet for bestilling af frokost - timetal med 2 cifre
 const deadline = "10:00"
 const reopen = "12:00"
 
-function getDeadline() {
-    return deadline
+const categoryURL = "/ords/st_lunch/stlunch_categories/";
+const supplierURL = "/ords/st_lunch/stlunch_suppliers/";
+const supplierMenuURL = "/ords/st_lunch/stlunch_supplier_menus/"
+const menuOptionsURL = "/ords/st_lunch/stlunch_menu_options/"
+
+
+export const STLunchHelper = {
+    deadline,
+    categoryURL,
+    supplierURL,
+    supplierMenuURL,
+    menuOptionsURL,
+    isBeforeDeadline,
+    isAfterReopen,
+    validateMail
 }
 
 function isBeforeDeadline(dateStr, timeInMillis) {
