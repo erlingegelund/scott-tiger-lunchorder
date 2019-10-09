@@ -85,8 +85,6 @@ import Octicon from "vue-octicon/components/Octicon.vue";
 import { STLunchHelper } from "../_helpers/stlunch";
 import "vue-octicon/icons";
 
-const supplierURL = "/ords/st_lunch/stlunch_suppliers/";
-
 export default {
   components: { Navigation, Octicon },
   data() {
@@ -115,7 +113,7 @@ export default {
     submit(sup) {
       if (sup.supplier_email && sup.supplier_name && this.validateMail(sup)) {
         if (sup.supplier_id < 0) {
-          Axios.post(supplierURL, sup)
+          Axios.post(STLunchHelper.supplierURL, sup)
             .then(response => {
               sup.supplier_id = response.data.supplier_id;
             })
@@ -123,7 +121,7 @@ export default {
               console.log(error);
             });
         } else {
-          Axios.put(supplierURL + sup.supplier_id.toString(), sup).catch(
+          Axios.put(STLunchHelper.supplierURL + sup.supplier_id.toString(), sup).catch(
             error => {
               console.log(error);
             }
@@ -137,7 +135,7 @@ export default {
       this.setVKey(sup);
     },
     del(sup) {
-      Axios.delete(supplierURL + sup.supplier_id.toString())
+      Axios.delete(STLunchHelper.supplierURL + sup.supplier_id.toString())
         .then(response => {
           var filtered = this.suppliers.filter(
             s => s.supplier_id != sup.supplier_id
@@ -163,7 +161,7 @@ export default {
     }
   },
   created: function() {
-    Axios.get(supplierURL)
+    Axios.get(STLunchHelper.supplierURL)
       .then(response => {
         var _suppliers = response.data.items;
         // opret vkey i hver supplier element - bruges til at kontrollere visning

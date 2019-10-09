@@ -52,9 +52,8 @@
 import Navigation from "./Navigation";
 import Axios from "axios";
 import Octicon from "vue-octicon/components/Octicon.vue";
+import { STLunchHelper } from "../_helpers/stlunch";
 import "vue-octicon/icons";
-
-const categoryURL = "/ords/st_lunch/stlunch_categories/";
 
 export default {
   components: { Navigation, Octicon },
@@ -80,7 +79,7 @@ export default {
     submit(cat) {
       if (cat.category_name) {
         if (cat.category_id < 0) {
-          Axios.post(categoryURL, cat)
+          Axios.post(STLunchHelper.categoryURL, cat)
             .then(response => {
               cat.category_id = response.data.category_id;
             })
@@ -88,7 +87,7 @@ export default {
               console.log(error);
             });
         } else {
-          Axios.put(categoryURL + cat.category_id, cat).catch(error => {
+          Axios.put(STLunchHelper.categoryURL + cat.category_id, cat).catch(error => {
             console.log(error);
           });
         }
@@ -100,7 +99,7 @@ export default {
       this.setVKey(cat);
     },
     del(cat) {
-      Axios.delete(categoryURL + cat.category_id)
+      Axios.delete(STLunchHelper.categoryURL + cat.category_id)
         .then(response => {
           var filtered = this.categories.filter(
             c => c.category_id != cat.category_id
@@ -122,7 +121,7 @@ export default {
     }
   },
   created: function() {
-    Axios.get(categoryURL)
+    Axios.get(STLunchHelper.categoryURL)
       .then(response => {
         var categories = response.data.items;
         for (var i in categories) {

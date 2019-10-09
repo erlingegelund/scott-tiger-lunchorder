@@ -188,7 +188,7 @@ export default {
       return !STLunchHelper.isBeforeDeadline(null, this.now);
     },
     deadlineFormatted() {
-      return STLunchHelper.getDeadline();
+      return STLunchHelper.deadline;
     },
     isAfterReopen() {
       return STLunchHelper.isAfterReopen(this.now);
