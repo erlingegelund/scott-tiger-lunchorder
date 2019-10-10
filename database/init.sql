@@ -43,7 +43,8 @@ CREATE TABLE stlunch_supplier_menus (
   supplier_menu_id NUMBER(10)
 , supplier_id NUMBER(10) NOT NULL
 , category_id NUMBER(10) NOT NULL
-, description VARCHAR2(40) NOT NULL
+, menu_name varchar2(40) NOT NULL
+, description VARCHAR2(255)
 , price NUMBER(6,2)
 , CONSTRAINT stlunch_supplier_menu_pk PRIMARY KEY (supplier_menu_id)
 , CONSTRAINT stlunch_sup_supp_menu_it_fk FOREIGN KEY (supplier_id) REFERENCES stlunch_suppliers (supplier_id)

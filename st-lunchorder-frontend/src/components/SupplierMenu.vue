@@ -57,13 +57,13 @@
                     <span v-if="m.edit">
                       <b-form-input
                         type="text"
-                        v-model="m.description"
+                        v-model="m.menu_name"
                         required
                         size="sm"
-                        :class="{ 'is-invalid': m.submitted && !m.description }"
+                        :class="{ 'is-invalid': m.submitted && !m.menu_name }"
                       ></b-form-input>
                     </span>
-                    <span v-else>{{m.description}}</span>
+                    <span v-else>{{m.menu_name}}</span>
                   </div>
                   <div class="col col-md-1" @click="display(m)">
                     <span v-if="m.edit">
@@ -87,6 +87,21 @@
                     <span class="btn-delete" @click="del(m)">
                       <octicon name="x"></octicon>
                     </span>
+                  </div>
+                </div>
+                <div class="row compact-row" v-show="(m.display && m.description)|| m.edit">
+                  <div class="col col-md-1"/>
+                  <div class="col col-md-1">Beskrivelse</div>
+                  <div class="col col-md-5">
+                    <span v-if="m.edit">
+                      <b-form-input
+                        type="text"
+                        v-model="m.description"
+                        required
+                        size="sm"
+                      ></b-form-input>
+                    </span>
+                    <span v-else>{{m.description}}</span>
                   </div>
                 </div>
                 <div class="row row-category compact-row" v-show="m.display || m.edit">
@@ -219,6 +234,7 @@ export default {
       var m = {
         supplier_menu_id: (this.menu.length+1) * -1,
         supplier_id: this.supplier.supplier_id,
+        menu_name: "",
         description: "",
         price: 0,
         options: [],
@@ -239,7 +255,7 @@ export default {
     },
     submit(mitem) {
       var allMandatoryFilled =
-        mitem.category_id && mitem.description && mitem.price;
+        mitem.category_id && mitem.menu_name && mitem.price;
       for (var i in mitem.options) {
         allMandatoryFilled =
           allMandatoryFilled &&
