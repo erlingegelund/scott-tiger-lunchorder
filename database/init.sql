@@ -33,9 +33,9 @@ CREATE TABLE stlunch_categories (
 
 CREATE TABLE stlunch_suppliers (
   supplier_id NUMBER(10)
-, supplier_email VARCHAR2(40) NOT NULL
-, supplier_name VARCHAR2(40) NOT NULL
-, supplier_phone VARCHAR2(40)
+, supplier_email VARCHAR2(40 CHAR) NOT NULL
+, supplier_name VARCHAR2(40 CHAR) NOT NULL
+, supplier_phone VARCHAR2(40 CHAR)
 , CONSTRAINT stlunch_supplier_pk PRIMARY KEY (supplier_id)
 );
 
@@ -43,8 +43,8 @@ CREATE TABLE stlunch_supplier_menus (
   supplier_menu_id NUMBER(10)
 , supplier_id NUMBER(10) NOT NULL
 , category_id NUMBER(10) NOT NULL
-, menu_name varchar2(40) NOT NULL
-, description VARCHAR2(255)
+, menu_name VARCHAR2(40 CHAR) NOT NULL
+, description VARCHAR2(255 CHAR)
 , price NUMBER(6,2)
 , CONSTRAINT stlunch_supplier_menu_pk PRIMARY KEY (supplier_menu_id)
 , CONSTRAINT stlunch_sup_supp_menu_it_fk FOREIGN KEY (supplier_id) REFERENCES stlunch_suppliers (supplier_id)
@@ -54,11 +54,11 @@ CREATE TABLE stlunch_supplier_menus (
 CREATE TABLE stlunch_menu_options (
   menu_option_id NUMBER(10)
 , supplier_menu_id NUMBER(10) NOT NULL
-, description VARCHAR2(40) NOT NULL
+, description VARCHAR2(40 CHAR) NOT NULL
 , mandatory_yn CHAR(1) DEFAULT 'N' NOT NULL
 , multiple_yn CHAR(1) DEFAULT 'N' NOT NULL
 , additional_price NUMBER(6,2)
-, selectables VARCHAR2(4000) NOT NULL
+, selectables VARCHAR2(4000 CHAR) NOT NULL
 , CONSTRAINT stlunch_menu_option_pk PRIMARY KEY (menu_option_id)
 , CONSTRAINT stlunch_menu_option_fk FOREIGN KEY (supplier_menu_id) 
     REFERENCES stlunch_supplier_menus (supplier_menu_id) 
@@ -69,15 +69,25 @@ CREATE TABLE stlunch_orders (
   order_id NUMBER(10)
 , user_id NUMBER(10) NOT NULL
 , order_date DATE NOT NULL
-, supplier_email VARCHAR2(40) NOT NULL
-, supplier_name VARCHAR2(40) NOT NULL
-, menu_category VARCHAR2(40) NOT NULL
-, menu_name VARCHAR2(40) NOT NULL
-, menu_options VARCHAR2(4000)
+, supplier_email VARCHAR2(40 CHAR) NOT NULL
+, supplier_name VARCHAR2(40 CHAR) NOT NULL
+, menu_category VARCHAR2(40 CHAR) NOT NULL
+, menu_name VARCHAR2(40 CHAR) NOT NULL
 , price NUMBER(6,2) NOT NULL
-, user_comment VARCHAR2(255)
+, user_comment VARCHAR2(255 CHAR)
 , CONSTRAINT stlunch_order_pk PRIMARY KEY (order_id)
 , CONSTRAINT stlunch_user_order_fk FOREIGN KEY (user_id) REFERENCES stlunch_users (user_id)
+);
+
+CREATE TABLE stlunch_order_options (
+  order_option_id NUMBER(10)
+, order_id NUMBER(10) NOT NULL
+, description VARCHAR(40 CHAR) NOT NULL
+, selected VARCHAR2(255 CHAR) NOT NULL
+, CONSTRAINT stlunch_order_option_pk PRIMARY KEY (order_option_id)
+, CONSTRAINT stlunch_order_order_option_fk FOREIGN KEY (order_id) 
+    REFERENCES stlunch_orders (order_id) 
+    ON DELETE CASCADE
 );
 
 CREATE OR REPLACE TRIGGER stlunch_user_bir 

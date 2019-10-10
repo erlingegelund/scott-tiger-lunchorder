@@ -45,11 +45,9 @@
                   {{mcat.category}}
                 </div>
                 <div class="container-fluid" v-show="mcat.display === 'Y'">
-                  <div v-for="mitem in mcat.items" :key="mitem.id">
+                  <div v-for="mitem in mcat.items" :key="mitem.vkey">
                     <div class="row row-item">
-                      <div class="col col-md-2">
-                        {{mitem.name}}
-                      </div>
+                      <div class="col col-md-2">{{mitem.name}}</div>
                       <div class="col col-md-8">{{mitem.description}}</div>
                       <div class="col col-md-2" style="text-align: right;">{{mitem.price}} kr</div>
                     </div>
@@ -143,6 +141,7 @@ import { STLunchHelper } from "../_helpers/stlunch";
 
 const supplierCategoriesURL = "/ords/st_lunch/suppliers_categories/prep_order/";
 const menusOptionsURL = "/ords/st_lunch/menus_options/prep_order/";
+const createOrderURL = "/ords/st_lunch/order/create/";
 
 const getSupplierCatMenu = function(supplier, category) {
   var supplierId = 0;
@@ -151,13 +150,6 @@ const getSupplierCatMenu = function(supplier, category) {
   } else {
     supplierId = category.vkey.split(":")[0];
   }
-  console.log(
-    "hent menu for leverandør (" +
-      supplierId +
-      ")/ kategori(" +
-      category.id +
-      ")"
-  );
   Axios.get(menusOptionsURL + supplierId + "/" + category.id).then(response => {
     var menuItems = response.data.items;
     for (var i in menuItems) {
@@ -173,6 +165,7 @@ const getSupplierCatMenu = function(supplier, category) {
       } else {
         menuItems[i].options = [];
       }
+      menuItems[i].vkey = menuItems[i].id+":"+menuItems[i].items_ordered
     }
     category.items = menuItems;
     category.vkey = supplierId + ":" + category.id + ":" + menuItems.length;
@@ -197,17 +190,24 @@ export default {
     },
     incrementOrder(item) {
       item.items_ordered++;
-      this.order.items.push(item.id);
+      var filtered = this.order.items.filter(i => i.menu_id == item.id);
+      if (filtered.length < 1) {
+        this.order.items.push({ menu_id: item.id });
+      }
+      item.vkey = item.id +":"+item.items_ordered
     },
     decrementOrder(item) {
       if (item.items_ordered > 0) {
         item.items_ordered--;
       }
-      var filtered = this.order.items.filter(id => id !== item.id);
-      this.order.items = filtered;
+      if (item.items_ordered == 0) {
+        var filtered = this.order.items.filter(i => i.menu_id !== item.id);
+        this.order.items = filtered;
+      }
+      item.vkey = item.id +":"+item.items_ordered
     },
     optionAutoOrder(item) {
-      var filtered = this.order.items.filter(id => id === item.id);
+      var filtered = this.order.items.filter(i => i.menu_id === item.id);
       if (!this.isMandatoryMissing(item) && filtered.length === 0) {
         this.incrementOrder(item);
       }
@@ -228,6 +228,37 @@ export default {
     },
     submitOrder() {
       // Persist the order
+      for (var i in this.suppliers) {
+        for (var j in this.suppliers[i].menu) {
+          for (var k in this.suppliers[i].menu[j].items) {
+            if (this.suppliers[i].menu[j].items[k].items_ordered > 0) {
+              var orderedMenu = this.suppliers[i].menu[j].items[k];
+              var orderedItem = this.order.items.filter(
+                i => i.menu_id == orderedMenu.id
+              );
+              orderedItem[0].items_ordered = orderedMenu.items_ordered;
+              orderedItem[0].comment = orderedMenu.comment;
+              orderedItem[0].options = [];
+              for (var n in orderedMenu.options) {
+                if (
+                  orderedMenu.options[n].value &&
+                  orderedMenu.options[n].value.length
+                ) {
+                  let option = {
+                    option_id: orderedMenu.options[n].id,
+                    selected: orderedMenu.options[n].value
+                  };
+                  let l = orderedItem[0].options.length;
+                  orderedItem[0].options[l] = option;
+                }
+              }
+            }
+          }
+        }
+      }
+      console.log(JSON.stringify(this.order));
+      Axios.post(createOrderURL, this.order)
+
       this.$router.push({ name: "UserHistory" });
     }
   },
@@ -246,6 +277,7 @@ export default {
     return {
       now: Date.now(),
       order: {
+        user_id: 63, // TODO: hent fra localStorage
         items: []
       },
       suppliers: []
