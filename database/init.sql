@@ -72,7 +72,7 @@ CREATE TABLE stlunch_orders (
 , supplier_email VARCHAR2(40) NOT NULL
 , supplier_name VARCHAR2(40) NOT NULL
 , menu_category VARCHAR2(40) NOT NULL
-, menu_description VARCHAR2(40) NOT NULL
+, menu_name VARCHAR2(40) NOT NULL
 , menu_options VARCHAR2(4000)
 , price NUMBER(6,2) NOT NULL
 , user_comment VARCHAR2(255)
