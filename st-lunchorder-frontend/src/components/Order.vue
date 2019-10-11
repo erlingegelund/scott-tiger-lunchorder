@@ -258,7 +258,7 @@ export default {
       }
       var _router = this.$router
       Axios.post(createOrderURL, this.order).then(response => {
-        _router.push({ name: "UserHistory", query: {orderItems: JSON.stringify(response.data)} })
+        _router.push({ name: "UserHistory", params: {orderItems: JSON.stringify(response.data)} })
       })
 
       //this.$router.push({ name: "UserHistory" });
@@ -279,7 +279,7 @@ export default {
     return {
       now: Date.now(),
       order: {
-        user_id: 63, // TODO: hent fra localStorage
+        user_id: 64, // TODO: hent fra localStorage
         items: []
       },
       suppliers: []

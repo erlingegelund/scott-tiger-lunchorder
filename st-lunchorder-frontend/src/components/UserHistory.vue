@@ -114,7 +114,7 @@ export default {
       }
     },
     orderDateChange() {
-      const userId = 63; // TODO: read from localStorage
+      const userId = 64; // TODO: read from localStorage
       Axios.get(userHistoryURL + userId + "/" + this.orderdate).then(
         response => {
           this.orders = response.data.orders;
@@ -136,7 +136,7 @@ export default {
     let _orderDate = new Date();
     this.orderdate = STLunchHelper.dateToString(_orderDate);
 
-    let orderItemsJSON = this.$route.query.orderItems;
+    let orderItemsJSON = this.$route.params.orderItems;
     if (orderItemsJSON) {
       this.orders = JSON.parse(orderItemsJSON).orders;
       if (this.orders.length > 0) {
