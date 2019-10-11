@@ -170,9 +170,6 @@ export default {
         }
         _suppliers.sort((s1,s2) => (s1.supplier_name > s2.supplier_name) ? 1 : -1)
         this.suppliers = _suppliers;
-      })
-      .catch(error => {
-        console.log(error);
       });
   }
 };

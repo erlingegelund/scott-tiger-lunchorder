@@ -366,7 +366,6 @@ export default {
         this.supplier.supplier_name = response.data.supplier_name;
         this.supplier.supplier_id = supplierId;
       })
-      .catch(error => console.log(error));
 
     // samtidig kald af REST - nødvendig fordi menu manipuleres på baggrund af categories
     Axios.all([this.fetchCategories(), this.fetchMenu(supplierId)]).then(

@@ -78,7 +78,7 @@ import { STLunchHelper } from "../_helpers/stlunch";
 import "vue-octicon/icons";
 
 const userURL = "/ords/st_lunch/stlunch_users/";
-const activeUserURL = "/ords/st_lunch/stlunch_active_users/"
+const activeUserURL = "/ords/st_lunch/stlunch_active_users/";
 
 export default {
   components: { Navigation, Octicon },
@@ -109,11 +109,9 @@ export default {
     submit(user) {
       if (user.user_email && user.user_name && this.validateMail(user)) {
         if (user.user_id < 0) {
-          Axios.post(userURL, user)
-            .then(response => {
-              user.user_id = response.data.user_id;
-            })
-            .catch(error => console.log(error));
+          Axios.post(userURL, user).then(response => {
+            user.user_id = response.data.user_id;
+          });
         } else {
           Axios.put(userURL + user.user_id.toString(), user).catch(error =>
             console.log(error)
@@ -127,13 +125,11 @@ export default {
       this.setVKey(user);
     },
     del(user) {
-      user.inactive_yn = 'Y'
-      Axios.put(userURL + user.user_id.toString(), user)
-        .then(response => {
-          var filtered = this.users.filter(u => u.user_id != user.user_id);
-          this.users = filtered;
-        })
-        .catch(error => console.log(error));
+      user.inactive_yn = "Y";
+      Axios.put(userURL + user.user_id.toString(), user).then(response => {
+        var filtered = this.users.filter(u => u.user_id != user.user_id);
+        this.users = filtered;
+      });
     },
     setVKey(user) {
       if (user.edit != true) user.edit = false;

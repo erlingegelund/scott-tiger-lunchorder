@@ -79,17 +79,11 @@ export default {
     submit(cat) {
       if (cat.category_name) {
         if (cat.category_id < 0) {
-          Axios.post(STLunchHelper.categoryURL, cat)
-            .then(response => {
-              cat.category_id = response.data.category_id;
-            })
-            .catch(error => {
-              console.log(error);
-            });
-        } else {
-          Axios.put(STLunchHelper.categoryURL + cat.category_id, cat).catch(error => {
-            console.log(error);
+          Axios.post(STLunchHelper.categoryURL, cat).then(response => {
+            cat.category_id = response.data.category_id;
           });
+        } else {
+          Axios.put(STLunchHelper.categoryURL + cat.category_id, cat);
         }
         cat.edit = false;
         cat.submitted = false;
@@ -99,14 +93,14 @@ export default {
       this.setVKey(cat);
     },
     del(cat) {
-      Axios.delete(STLunchHelper.categoryURL + cat.category_id)
-        .then(response => {
+      Axios.delete(STLunchHelper.categoryURL + cat.category_id).then(
+        response => {
           var filtered = this.categories.filter(
             c => c.category_id != cat.category_id
           );
           this.categories = filtered;
-        })
-        .catch(error => console.log(error));
+        }
+      );
     },
     setVKey(cat) {
       var vkey = cat.category_id.toString() + ":";
@@ -121,18 +115,16 @@ export default {
     }
   },
   created: function() {
-    Axios.get(STLunchHelper.categoryURL)
-      .then(response => {
-        var categories = response.data.items;
-        for (var i in categories) {
-          this.setVKey(categories[i]);
-        }
-        categories.sort((c1,c2) => (c1.category_name > c2.category_name) ? 1 : -1)
-        this.categories = categories;
-      })
-      .catch(error => {
-        console.log(error);
-      });
+    Axios.get(STLunchHelper.categoryURL).then(response => {
+      var categories = response.data.items;
+      for (var i in categories) {
+        this.setVKey(categories[i]);
+      }
+      categories.sort((c1, c2) =>
+        c1.category_name > c2.category_name ? 1 : -1
+      );
+      this.categories = categories;
+    });
   }
 };
 </script>
