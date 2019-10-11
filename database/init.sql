@@ -73,6 +73,7 @@ CREATE TABLE stlunch_orders (
 , supplier_name VARCHAR2(40 CHAR) NOT NULL
 , menu_category VARCHAR2(40 CHAR) NOT NULL
 , menu_name VARCHAR2(40 CHAR) NOT NULL
+, items_ordered NUMBER(4) NOT NULL,
 , price NUMBER(6,2) NOT NULL
 , user_comment VARCHAR2(255 CHAR)
 , CONSTRAINT stlunch_order_pk PRIMARY KEY (order_id)

@@ -47,8 +47,8 @@
                 <div class="container-fluid" v-show="mcat.display === 'Y'">
                   <div v-for="mitem in mcat.items" :key="mitem.vkey">
                     <div class="row row-item">
-                      <div class="col col-md-2">{{mitem.name}}</div>
-                      <div class="col col-md-8">{{mitem.description}}</div>
+                      <div class="col col-md-3">{{mitem.name}}</div>
+                      <div class="col col-md-7">{{mitem.description}}</div>
                       <div class="col col-md-2" style="text-align: right;">{{mitem.price}} kr</div>
                     </div>
                     <div class="row" v-show="mitem.options.length > 0">
@@ -123,9 +123,9 @@
         <div class="col col-1">
           <button
             class="btn btn-primary btn-lg"
-            v-bind:disabled="order.items.length === 0 || (isAfterDeadline && !isAfterReopen)"
+            v-bind:disabled="order.items.length === 0 "
             @click="submitOrder()"
-          >Bestil</button>
+          >Bestil</button><!-- || (isAfterDeadline && !isAfterReopen) -->
         </div>
       </div>
     </div>
@@ -256,10 +256,12 @@ export default {
           }
         }
       }
-      console.log(JSON.stringify(this.order));
-      Axios.post(createOrderURL, this.order)
+      var _router = this.$router
+      Axios.post(createOrderURL, this.order).then(response => {
+        _router.push({ name: "UserHistory", query: {orderItems: JSON.stringify(response.data)} })
+      })
 
-      this.$router.push({ name: "UserHistory" });
+      //this.$router.push({ name: "UserHistory" });
     }
   },
   computed: {

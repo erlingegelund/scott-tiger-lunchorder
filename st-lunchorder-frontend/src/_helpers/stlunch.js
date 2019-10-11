@@ -16,7 +16,8 @@ export const STLunchHelper = {
     menuOptionsURL,
     isBeforeDeadline,
     isAfterReopen,
-    validateMail
+    validateMail,
+    dateToString
 }
 
 function isBeforeDeadline(dateStr, timeInMillis) {
@@ -69,4 +70,8 @@ function isAfterReopen(timeInMillis) {
 function validateMail(email) {
     // Dette regex er ikke korrekt - tillader ikke æøå og alle tilladt top-domæner
     return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)
+}
+
+function dateToString(date) {
+    return date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate()
 }

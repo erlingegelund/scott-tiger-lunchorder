@@ -60,6 +60,7 @@
 <script>
 import Navigation from "./Navigation";
 import Octicon from "vue-octicon/components/Octicon.vue";
+import { STLunchHelper } from '../_helpers/stlunch'
 import "vue-octicon/icons";
 
 export default {
@@ -106,9 +107,9 @@ export default {
   },
   created() {
     var today = new Date();
-    this.orderdateTo = today.toISOString().substr(0, 10);
+    this.orderdateTo = STLunchHelper.dateToString(today);
     today.setMonth(today.getMonth() - 1);
-    this.orderdateFrom = today.toISOString().substr(0, 10);
+    this.orderdateFrom = STLunchHelper.dateToString(today);
   }
 };
 </script>

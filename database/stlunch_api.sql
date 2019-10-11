@@ -8,7 +8,7 @@ CREATE OR REPLACE PACKAGE stlunch_api AS
   );
   PROCEDURE fetch_orders (
     p_user_id stlunch_orders.user_id%TYPE
-  , p_order_date stlunch_orders.order_date%TYPE
+  , p_order_date VARCHAR2
   );
   PROCEDURE create_order(
     p_body IN blob
@@ -101,10 +101,11 @@ CREATE OR REPLACE PACKAGE BODY stlunch_api AS
     APEX_JSON.close_object;
   END fetch_supplier_cat_menus;
   
-  PROCEDURE fetch_orders (
+  FUNCTION fetch_orders_cursor (
     p_user_id stlunch_orders.user_id%TYPE
-  , p_order_date stlunch_orders.order_date%TYPE
-  ) IS
+  , p_order_date VARCHAR2
+  ) RETURN SYS_REFCURSOR
+  IS
     l_cursor           SYS_REFCURSOR;
   BEGIN
     OPEN l_cursor FOR
@@ -115,6 +116,7 @@ CREATE OR REPLACE PACKAGE BODY stlunch_api AS
       , supplier_name AS "supplier_name"
       , menu_category AS "menu_category"
       , menu_name AS "menu_name"
+      , items_ordered AS "items_ordered"
       , price AS "price"
       , user_comment AS "user_comment"
       , CURSOR(
@@ -128,10 +130,45 @@ CREATE OR REPLACE PACKAGE BODY stlunch_api AS
       WHERE user_id = p_user_id
       AND order_date = p_order_date
       ORDER BY supplier_name, menu_category, menu_name;
+    RETURN l_cursor;
+  END;
+  
+  PROCEDURE fetch_orders (
+    p_user_id stlunch_orders.user_id%TYPE
+  , p_order_date VARCHAR2
+  ) IS
+    l_order_date DATE;
+    l_cursor           SYS_REFCURSOR;
+  BEGIN
+    if p_order_date is null then
+      l_order_date := trunc(sysdate);
+    else 
+      l_order_date := to_date(p_order_date, 'YYYY-MM-DD');
+    end if;
+    l_cursor := fetch_orders_cursor(p_user_id, l_order_date);
     
     APEX_JSON.open_object;
     APEX_JSON.write('orders', l_cursor);
     APEX_JSON.close_object;
+  EXCEPTION
+    WHEN OTHERS THEN
+      HTP.print(SQLERRM);
+  END fetch_orders; 
+  
+  PROCEDURE fetch_orders (
+    p_user_id stlunch_orders.user_id%TYPE
+  , p_order_date stlunch_orders.order_date%TYPE
+  ) IS
+    l_cursor           SYS_REFCURSOR;
+  BEGIN
+    l_cursor := fetch_orders_cursor(p_user_id, p_order_date);
+    
+    APEX_JSON.open_object;
+    APEX_JSON.write('orders', l_cursor);
+    APEX_JSON.close_object;
+  EXCEPTION
+    WHEN OTHERS THEN
+      HTP.print(SQLERRM);
   END fetch_orders; 
   
   PROCEDURE create_order(
@@ -187,6 +224,7 @@ CREATE OR REPLACE PACKAGE BODY stlunch_api AS
       l_order_tab(l_order_tab.LAST).order_id := stlunch_seq.nextval;
       l_order_tab(l_order_tab.count).user_id := l_user_id;
       l_order_tab(l_order_tab.count).order_date := l_order_date;
+      l_order_tab(l_order_tab.count).items_ordered := l_items_ordered;
       l_order_tab(l_order_tab.count).user_comment := l_comment;
       FOR m IN (
            SELECT supp.supplier_email, supp.supplier_name, cat.category_name, supm.menu_name, supm.price
@@ -297,6 +335,35 @@ BEGIN
     p_method         => 'POST',
     p_source_type    => ORDS.source_type_plsql,
     p_source         => 'BEGIN stlunch_api.create_order(p_body => :body); END;',
+    p_items_per_page => 0);
+
+  ORDS.define_module(
+    p_module_name    => 'get_user_order',
+    p_base_path      => 'get_user_order/',
+    p_items_per_page => 0);
+  
+  ORDS.define_template(
+   p_module_name    => 'get_user_order',
+   p_pattern        => 'on_date/:user_id/:order_date');
+
+  ORDS.define_handler(
+    p_module_name    => 'get_user_order',
+    p_pattern        => 'on_date/:user_id/:order_date',
+    p_method         => 'GET',
+    p_source_type    => ORDS.source_type_plsql,
+    p_source         => 'BEGIN stlunch_api.fetch_orders(p_user_id => :user_id, p_order_date => :order_date); END;',
+    p_items_per_page => 0);
+
+  ORDS.define_template(
+   p_module_name    => 'get_user_order',
+   p_pattern        => 'on_date/:user_id');
+
+  ORDS.define_handler(
+    p_module_name    => 'get_user_order',
+    p_pattern        => 'on_date/:user_id',
+    p_method         => 'GET',
+    p_source_type    => ORDS.source_type_plsql,
+    p_source         => 'BEGIN stlunch_api.fetch_orders(p_user_id => :user_id, p_order_date => null); END;',
     p_items_per_page => 0);
 
   COMMIT;

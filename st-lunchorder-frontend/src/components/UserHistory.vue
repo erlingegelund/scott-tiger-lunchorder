@@ -19,19 +19,19 @@
         <div class="col">
           <div class="container-fluid">
             <div class="row row-supplier">
-              <div class="col col-md-4">Beskrivelse</div>
-              <div class="col col-md-3">Valg</div>
+              <div class="col col-md-3">Beskrivelse</div>
+              <div class="col col-md-4">Valg</div>
               <div class="col">Kommentar</div>
               <div class="col col-md-1" style="text-align: right;">Pris</div>
               <div class="col col-md-1" style="text-align: right;">Antal</div>
             </div>
             <div
               v-for="order in orders"
-              :key="order.orderid"
+              :key="order.order_id"
               class="row align-items-center row-item"
             >
-              <div class="col col-md-4">{{order.description}}</div>
-              <div class="col col-md-3">
+              <div class="col col-md-3">{{order.menu_name}}</div>
+              <div class="col col-md-4">
                 <table>
                   <tr v-for="opt in order.options" :key="opt.description" style="font-size: 0.8em;">
                     <td>{{opt.description}}:</td>
@@ -41,17 +41,17 @@
                   </tr>
                 </table>
               </div>
-              <div class="col">{{order.comment}}</div>
+              <div class="col">{{order.user_comment}}</div>
               <div class="col col-md-1" style="text-align: right;">
                 <span>kr</span>
                 {{order.price}}
               </div>
               <div class="col col-md-1" style="text-align: right;">
-                {{order.itemsOrdered}}
+                {{order.items_ordered}}
                 <span v-show="showUpdateOrder">
                   <b-button
                     size="sm"
-                    :disabled="order.itemsOrdered === 0"
+                    :disabled="order.items_ordered === 0"
                     @click="decrementOrder(order)"
                     style="margin-left: 2px; margin-right: 2px;"
                   >-</b-button>
@@ -77,106 +77,83 @@
 </template>
 <script>
 import Navigation from "./Navigation";
-import { STLunchHelper } from '../_helpers/stlunch'
+import { STLunchHelper } from "../_helpers/stlunch";
+import Axios from "axios";
+
+const userHistoryURL = "/ords/st_lunch/get_user_order/on_date/";
+
 export default {
-  name: 'user-history',
+  name: "user-history",
   components: { Navigation },
   data() {
     return {
       orderdate: "",
       orderUpdated: false,
       now: Date.now(),
-      orders: [
-        {
-          orderid: 0,
-          description: "Fiskefilet med remoulade",
-          comment: "",
-          price: 15,
-          itemsOrdered: 1
-        },
-        {
-          orderid: 203,
-          description: "Frikadelle med surt",
-          comment: "",
-          price: 15.0,
-          options: [],
-          itemsOrdered: 1
-        },
-        {
-          orderid: 204,
-          description: "Kalkunbryst med karrydressing",
-          comment:
-            "Jamen, jeg vil meget gerne skrive en meget lang novelle om, hvorfor jeg gerne spiser kalkunbryst med karrydressing",
-          price: 35.0,
-          options: [],
-          itemsOrdered: 1
-        },
-        {
-          orderid: 501,
-          description: "Lille bland-selv salat",
-          comment: "Fillidut og kager",
-          price: 35.0,
-          options: [
-            {
-              description: "Salat",
-              value: [
-                "Briccolisalat",
-                "Couscous",
-                "Pasta",
-                "Hummus",
-                "Revet gulerødder",
-                "Tomater",
-                "Agurker"
-              ]
-            },
-            {
-              description: "Dressing",
-              value: ["Cremefraise"]
-            },
-            {
-              description: "Kød",
-              value: ["Kylling"]
-            },
-            {
-              description: "Brød",
-              value: ["Ja"]
-            }
-          ],
-          itemsOrdered: 1
-        }
-      ]
+      orders: []
     };
   },
   methods: {
     incrementOrder(item) {
-      item.itemsOrdered++;
+      item.items_ordered++;
       this.orderUpdated = true;
     },
     decrementOrder(item) {
-      if (item.itemsOrdered > 0) {
-        item.itemsOrdered--;
+      if (item.items_ordered > 0) {
+        item.items_ordered--;
         this.orderUpdated = true;
       }
     },
-    orderDateChange() {},
+    convertOptionSelections() {
+      for (var i in this.orders) {
+        for (var j in this.orders[i].options) {
+          this.orders[i].options[j].value = this.orders[i].options[
+            j
+          ].selected.split("\n");
+        }
+      }
+    },
+    orderDateChange() {
+      const userId = 63; // TODO: read from localStorage
+      Axios.get(userHistoryURL + userId + "/" + this.orderdate).then(
+        response => {
+          this.orders = response.data.orders;
+          this.convertOptionSelections()
+        }
+      );
+    },
     updateOrder() {}
   },
   computed: {
     showUpdateOrder() {
-      return STLunchHelper.isBeforeDeadline(this.orderdate,this.now)||(Date.parse(this.orderdate) >this.now)
+      return (
+        STLunchHelper.isBeforeDeadline(this.orderdate, this.now) ||
+        Date.parse(this.orderdate) > this.now
+      );
     }
   },
   created() {
-    var _orderDate = new Date();
-    var qdate = this.$route.query.orderDate
-    if(qdate) {
-      this.orderdate = qdate
+    let _orderDate = new Date();
+    this.orderdate = STLunchHelper.dateToString(_orderDate);
+
+    let orderItemsJSON = this.$route.query.orderItems;
+    if (orderItemsJSON) {
+      this.orders = JSON.parse(orderItemsJSON).orders;
+      if (this.orders.length > 0) {
+        let orderMillis = Date.parse(this.orders[0].order_date);
+        _orderDate.setTime(orderMillis);
+      }
+      this.convertOptionSelections();
+      this.orderdate = STLunchHelper.dateToString(_orderDate);
     } else {
-      this.orderdate = _orderDate.toISOString().substr(0, 10);
+      this.orderDateChange();
     }
+
     // Timer til at sikre computed felt showUpdateOrder er retvisende ift tidspunkt
-    var self = this
-    setInterval(function() {self.now = Date.now()},30000)
+    var self = this;
+    setInterval(function() {
+      self.now = Date.now();
+    }, 30000);
   }
 };
 </script>
