@@ -111,7 +111,7 @@ CREATE OR REPLACE PACKAGE BODY stlunch_api AS
     OPEN l_cursor FOR
       SELECT order_id AS "order_id"
       , user_id AS "user_id"
-      , order_date AS "order_date" 
+      , to_char(order_date, 'YYYY-MM-DD')||'T00:00:00.000Z' AS "order_date" -- mimic ISO 8601 
       , supplier_email AS "supplier_email"
       , supplier_name AS "supplier_name"
       , menu_category AS "menu_category"

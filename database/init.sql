@@ -233,6 +233,13 @@ BEGIN
                        p_object_alias => 'stlunch_menu_options',
                        p_auto_rest_auth => FALSE);
 
+    ORDS.ENABLE_OBJECT(p_enabled => TRUE,
+                       p_schema => 'ST_LUNCH',
+                       p_object => 'STLUNCH_ORDERS',
+                       p_object_type => 'TABLE',
+                       p_object_alias => 'stlunch_orders',
+                       p_auto_rest_auth => FALSE);
+
     ORDS.define_service(p_module_name    => 'stlunch_sup_supplier_menus',
                         p_base_path      => 'stlunch_suppliers/',
                         p_pattern        => 'stlunch_supplier_menus/:supp_id',
