@@ -56,11 +56,11 @@ CREATE OR REPLACE PACKAGE BODY stlunch_api AS
                       mcat.category_id AS "id"
                     , mcat.category_name AS "category"
                     , CASE WHEN supcm.supplier_id = l_last_supplier_id AND mcat.category_id = l_last_category_id THEN 'Y' ELSE 'N' END AS "display"
-                    , supcm.supplier_id||':'||mcat.category_id AS "vkey"
+                    , supcm.supplier_id AS "supplier_id"
                FROM stlunch_supplier_menus supcm, stlunch_categories mcat
                WHERE supcm.supplier_id = supp.supplier_id
                AND mcat.category_id = supcm.category_id
-               ORDER BY mcat.category_name) AS "menu"
+               ORDER BY mcat.category_name) AS "categories"
       FROM stlunch_suppliers supp
       ORDER BY supplier_name;
 
@@ -81,6 +81,7 @@ CREATE OR REPLACE PACKAGE BODY stlunch_api AS
            , description AS "description"
            , price AS "price"
            , 0 AS "items_ordered"
+           , '' AS "comment"
            , CURSOR(
                SELECT mopt.menu_option_id AS "id"
                     , mopt.description AS "description"
@@ -97,13 +98,13 @@ CREATE OR REPLACE PACKAGE BODY stlunch_api AS
       ORDER BY menu_name;
 
     APEX_JSON.open_object;
-    APEX_JSON.write('items', l_cursor);
+    APEX_JSON.write('menu_items', l_cursor);
     APEX_JSON.close_object;
   END fetch_supplier_cat_menus;
   
   FUNCTION fetch_orders_cursor (
     p_user_id stlunch_orders.user_id%TYPE
-  , p_order_date VARCHAR2
+  , p_order_date stlunch_orders.order_date%TYPE
   ) RETURN SYS_REFCURSOR
   IS
     l_cursor           SYS_REFCURSOR;
@@ -128,7 +129,7 @@ CREATE OR REPLACE PACKAGE BODY stlunch_api AS
       ) AS "options"
       FROM stlunch_orders ord
       WHERE user_id = p_user_id
-      AND order_date = p_order_date
+      AND trunc(order_date) = trunc(p_order_date)
       ORDER BY supplier_name, menu_category, menu_name;
     RETURN l_cursor;
   END;

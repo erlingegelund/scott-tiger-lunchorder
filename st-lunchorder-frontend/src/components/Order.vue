@@ -33,7 +33,7 @@
             {{sup.name}}
           </div>
           <div class="container-fluid" v-show="sup.display === 'Y'">
-            <div v-for="mcat in sup.menu" :key="mcat.vkey" class="row">
+            <div v-for="mcat in sup.categories" :key="mcat.id" class="row">
               <div class="col">
                 <div @click="toggleChildren(mcat)" class="row-category">
                   <span v-if="mcat.display === 'Y'">
@@ -45,7 +45,7 @@
                   {{mcat.category}}
                 </div>
                 <div class="container-fluid" v-show="mcat.display === 'Y'">
-                  <div v-for="mitem in mcat.items" :key="mitem.vkey">
+                  <div v-for="mitem in mcat.menu_items" :key="mitem.id">
                     <div class="row row-item">
                       <div class="col col-md-3">{{mitem.name}}</div>
                       <div class="col col-md-7">{{mitem.description}}</div>
@@ -78,6 +78,10 @@
                                 :options="opt.selections"
                                 v-bind:multiple="opt.multiple_yn === 'Y'"
                                 v-bind:close-on-select="opt.multiple_yn !== 'Y'"
+                                selectedLabel="Valgt"
+                                selectLabel="Tryk <enter> for at vælge"
+                                deselectLabel="Tryk <enter> for at fjerne"
+                                placeholder="Vælg mulighed"
                                 @close="optionAutoOrder(mitem)"
                               />
                             </div>
@@ -123,9 +127,9 @@
         <div class="col col-1">
           <button
             class="btn btn-primary btn-lg"
-            v-bind:disabled="order.items.length === 0 "
+            v-bind:disabled="order.items.length === 0 || (isAfterDeadline && !isAfterReopen)"
             @click="submitOrder()"
-          >Bestil</button><!-- || (isAfterDeadline && !isAfterReopen) -->
+          >Bestil</button>
         </div>
       </div>
     </div>
@@ -143,35 +147,6 @@ const supplierCategoriesURL = "/ords/st_lunch/suppliers_categories/prep_order/";
 const menusOptionsURL = "/ords/st_lunch/menus_options/prep_order/";
 const createOrderURL = "/ords/st_lunch/order/create/";
 
-const getSupplierCatMenu = function(supplier, category) {
-  var supplierId = 0;
-  if (supplier) {
-    supplierId = supplier.id;
-  } else {
-    supplierId = category.vkey.split(":")[0];
-  }
-  Axios.get(menusOptionsURL + supplierId + "/" + category.id).then(response => {
-    var menuItems = response.data.items;
-    for (var i in menuItems) {
-      if (menuItems[i].options) {
-        for (var n in menuItems[i].options) {
-          var _selections = [];
-          if (menuItems[i].options[n].selectables) {
-            _selections = menuItems[i].options[n].selectables.split("\n");
-          }
-          menuItems[i].options[n].selections = _selections;
-          menuItems[i].options[n].value = [];
-        }
-      } else {
-        menuItems[i].options = [];
-      }
-      menuItems[i].vkey = menuItems[i].id+":"+menuItems[i].items_ordered
-    }
-    category.items = menuItems;
-    category.vkey = supplierId + ":" + category.id + ":" + menuItems.length;
-  });
-};
-
 export default {
   name: "Order",
   components: { Multiselect, Navigation, Octicon },
@@ -182,8 +157,22 @@ export default {
           obj.display = "N";
         } else {
           obj.display = "Y";
-          if (obj["category"] && !obj["items"]) {
-            getSupplierCatMenu(null, obj);
+          if (obj["category"] && obj["menu_items"].length == 0) {
+            let supplier_id = obj.supplier_id;
+            var self = this;
+            Axios.get(menusOptionsURL + supplier_id + "/" + obj.id).then(
+              response => {
+                let supplier = self.suppliers.filter(
+                  s => s.id === supplier_id
+                )[0];
+                let category = supplier.categories.filter(
+                  c => c.id === obj.id
+                )[0];
+                category.menu_items = self.prepareMenuItems(
+                  response.data.menu_items
+                );
+              }
+            );
           }
         }
       }
@@ -194,7 +183,6 @@ export default {
       if (filtered.length < 1) {
         this.order.items.push({ menu_id: item.id });
       }
-      item.vkey = item.id +":"+item.items_ordered
     },
     decrementOrder(item) {
       if (item.items_ordered > 0) {
@@ -204,7 +192,6 @@ export default {
         var filtered = this.order.items.filter(i => i.menu_id !== item.id);
         this.order.items = filtered;
       }
-      item.vkey = item.id +":"+item.items_ordered
     },
     optionAutoOrder(item) {
       var filtered = this.order.items.filter(i => i.menu_id === item.id);
@@ -229,10 +216,12 @@ export default {
     submitOrder() {
       // Persist the order
       for (var i in this.suppliers) {
-        for (var j in this.suppliers[i].menu) {
-          for (var k in this.suppliers[i].menu[j].items) {
-            if (this.suppliers[i].menu[j].items[k].items_ordered > 0) {
-              var orderedMenu = this.suppliers[i].menu[j].items[k];
+        for (var j in this.suppliers[i].categories) {
+          for (var k in this.suppliers[i].categories[j].menu_items) {
+            if (
+              this.suppliers[i].categories[j].menu_items[k].items_ordered > 0
+            ) {
+              var orderedMenu = this.suppliers[i].categories[j].menu_items[k];
               var orderedItem = this.order.items.filter(
                 i => i.menu_id == orderedMenu.id
               );
@@ -256,12 +245,31 @@ export default {
           }
         }
       }
-      var _router = this.$router
+      var _router = this.$router;
       Axios.post(createOrderURL, this.order).then(response => {
-        _router.push({ name: "UserHistory", params: {orderItems: JSON.stringify(response.data)} })
-      })
-
-      //this.$router.push({ name: "UserHistory" });
+        _router.push({
+          name: "UserHistory",
+          params: { orderItems: JSON.stringify(response.data) }
+        });
+      });
+    },
+    prepareMenuItems(menuItems) {
+      for (var i in menuItems) {
+        if (menuItems[i].options) {
+          for (var n in menuItems[i].options) {
+            var _selections = [];
+            if (menuItems[i].options[n].selectables) {
+              _selections = menuItems[i].options[n].selectables.split("\n");
+            }
+            menuItems[i].options[n].selections = _selections;
+            menuItems[i].options[n].value = [];
+          }
+        } else {
+          menuItems[i].options = [];
+        }
+        menuItems[i].items_ordered = 0;
+      }
+      return menuItems;
     }
   },
   computed: {
@@ -292,19 +300,35 @@ export default {
       self.now = Date.now();
     }, 30000);
 
-    // TODO: erstat med userId gemt i localStorage
-    var userId = 0;
-    Axios.get(supplierCategoriesURL + userId.toString()).then(response => {
-      var suppliersCategories = response.data.suppliers;
-      var suppDisplay = suppliersCategories.filter(s => s.display === "Y");
-      if (suppDisplay && suppDisplay.length > 0) {
-        var catDisplay = suppDisplay[0].menu.filter(m => m.display === "Y");
-        if (catDisplay && catDisplay.length > 0) {
-          getSupplierCatMenu(suppDisplay[0], catDisplay[0]);
+    Axios.get(supplierCategoriesURL + this.order.user_id.toString()).then(
+      response => {
+        var suppliersCategories = response.data.suppliers;
+        // Hent menu for brugerens sidst bestilte leverandør / kategori
+        var suppDisplay = suppliersCategories.filter(s => s.display === "Y");
+        if (suppDisplay && suppDisplay.length > 0) {
+          var catDisplay = suppDisplay[0].categories.filter(
+            m => m.display === "Y"
+          );
+          if (catDisplay && catDisplay.length > 0) {
+            Axios.get(
+              menusOptionsURL + suppDisplay[0].id + "/" + catDisplay[0].id
+            ).then(response => {
+              catDisplay[0].menu_items = self.prepareMenuItems(
+                response.data.menu_items
+              );
+              this.suppliers = suppliersCategories;
+            });
+          }
+        } else {
+          for (let i in suppliersCategories) {
+            for (let j in suppliersCategories[i].categories) {
+              suppliersCategories[i].categories[j].menu_items = [];
+            }
+          }
+          this.suppliers = suppliersCategories;
         }
       }
-      this.suppliers = suppliersCategories;
-    });
+    );
   }
 };
 </script>
