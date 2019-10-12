@@ -112,7 +112,9 @@ CREATE OR REPLACE PACKAGE BODY stlunch_api AS
     OPEN l_cursor FOR
       SELECT order_id AS "order_id"
       , user_id AS "user_id"
-      , to_char(order_date, 'YYYY-MM-DD')||'T00:00:00.000Z' AS "order_date" -- mimic ISO 8601 
+      , to_char(
+          SYS_EXTRACT_UTC(cast (order_date as timestamp with time zone))
+       , 'YYYY-MM-DD"T"HH24:MI:SS.ff3"Z') AS "order_date" -- Format ISO 8601 - Jumping through hoops to get UTC time 
       , supplier_email AS "supplier_email"
       , supplier_name AS "supplier_name"
       , menu_category AS "menu_category"
@@ -269,7 +271,7 @@ CREATE OR REPLACE PACKAGE BODY stlunch_api AS
         END IF;
       END LOOP;
       
-      l_order_tab(l_order_tab.LAST).price := l_price * l_items_ordered;
+      l_order_tab(l_order_tab.LAST).price := l_price;
     END LOOP;
     
     FORALL i IN l_order_tab.FIRST..l_order_tab.LAST

@@ -44,7 +44,7 @@
               <div class="col">{{order.user_comment}}</div>
               <div class="col col-md-1" style="text-align: right;">
                 <span>kr</span>
-                {{order.price}}
+                {{order.total_price}}
               </div>
               <div class="col col-md-1" style="text-align: right;">
                 {{order.items_ordered}}
@@ -97,20 +97,22 @@ export default {
   methods: {
     incrementOrder(item) {
       item.items_ordered++;
+      item.total_price = item.items_ordered * item.price;
       this.orderUpdated = true;
     },
     decrementOrder(item) {
       if (item.items_ordered > 0) {
         item.items_ordered--;
+        item.total_price = item.items_ordered * item.price;
         this.orderUpdated = true;
       }
     },
     convertOptionSelections() {
       for (var i in this.orders) {
-        for (var j in this.orders[i].options) {
-          this.orders[i].options[j].value = this.orders[i].options[
-            j
-          ].selected.split("\n");
+        let order = this.orders[i];
+        order.total_price = order.items_ordered * order.price;
+        for (var j in order.options) {
+          order.options[j].value = order.options[j].selected.split("\n");
         }
       }
     },
@@ -122,6 +124,7 @@ export default {
           this.convertOptionSelections();
         }
       );
+      this.orderUpdated = false;
     },
     updateOrder() {
       if (this.orderUpdated) {
