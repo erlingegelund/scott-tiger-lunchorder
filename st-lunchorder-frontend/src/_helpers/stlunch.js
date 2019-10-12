@@ -6,6 +6,7 @@ const categoryURL = "/ords/st_lunch/stlunch_categories/";
 const supplierURL = "/ords/st_lunch/stlunch_suppliers/";
 const supplierMenuURL = "/ords/st_lunch/stlunch_supplier_menus/"
 const menuOptionsURL = "/ords/st_lunch/stlunch_menu_options/"
+const userHistoryURL = "/ords/st_lunch/get_user_order/on_date/";
 
 
 export const STLunchHelper = {
@@ -14,10 +15,12 @@ export const STLunchHelper = {
     supplierURL,
     supplierMenuURL,
     menuOptionsURL,
+    userHistoryURL,
     isBeforeDeadline,
     isAfterReopen,
     validateMail,
-    dateToString
+    dateToString,
+    prepOrdersForReport
 }
 
 function isBeforeDeadline(dateStr, timeInMillis) {
@@ -74,4 +77,14 @@ function validateMail(email) {
 
 function dateToString(date) {
     return date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate()
+}
+
+function prepOrdersForReport(orders) {
+    for (var i in orders) {
+        let order = orders[i];
+        order.total_price = order.items_ordered * order.price;
+        for (var j in order.options) {
+            order.options[j].value = order.options[j].selected.split("\n");
+        }
+    }
 }

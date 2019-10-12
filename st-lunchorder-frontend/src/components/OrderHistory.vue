@@ -30,9 +30,9 @@
               :key="order.orderid"
               class="row align-items-center row-item"
             >
-              <div class="col">{{order.orderedBy}}</div>
-              <div class="col col-2">{{order.supplier}}</div>
-              <div class="col col-4">{{order.description}}</div>
+              <div class="col">{{order.user_name}}</div>
+              <div class="col col-2">{{order.supplier_name}}</div>
+              <div class="col col-4">{{order.menu_name}}</div>
               <div class="col col-3">
                 <table>
                   <tr v-for="opt in order.options" :key="opt.description" style="font-size: 0.8em;">
@@ -56,86 +56,30 @@
 </template>
 <script>
 import Navigation from "./Navigation";
+import { STLunchHelper } from "../_helpers/stlunch";
+import Axios from "axios";
+
 export default {
   components: { Navigation },
   data() {
     return {
       orderdate: "",
-      orders: [
-        {
-          orderid: 0,
-          description: "Fiskefilet med remoulade",
-          comment: "",
-          price: 15,
-          itemsOrdered: 1,
-          orderedBy: "Hans",
-          supplier: "Slagter Lise & John"
-        },
-        {
-          orderid: 203,
-          description: "Frikadelle med surt",
-          comment: "",
-          price: 15.0,
-          options: [],
-          itemsOrdered: 1,
-          orderedBy: "Grete",
-          supplier: "Slagter Lise & John"
-        },
-        {
-          orderid: 204,
-          description: "Kalkunbryst med karrydressing",
-          comment:
-            "Jamen, jeg vil meget gerne skrive en meget lang novelle om, hvorfor jeg gerne spiser kalkunbryst med karrydressing",
-          price: 35.0,
-          options: [],
-          itemsOrdered: 1,
-          orderedBy: "Tornerose",
-          supplier: "Slagter Lise & John"
-        },
-        {
-          orderid: 501,
-          description: "Lille bland-selv salat",
-          comment: "Fillidut og kager",
-          price: 35.0,
-          options: [
-            {
-              description: "Salat",
-              value: [
-                "Briccolisalat",
-                "Couscous",
-                "Pasta",
-                "Hummus",
-                "Revet gulerødder",
-                "Tomater",
-                "Agurker"
-              ]
-            },
-            {
-              description: "Dressing",
-              value: ["Cremefraise"]
-            },
-            {
-              description: "Kød",
-              value: ["Kylling"]
-            },
-            {
-              description: "Brød",
-              value: ["Ja"]
-            }
-          ],
-          itemsOrdered: 1,
-          orderedBy: "Rødhætte",
-          supplier: "Coffee & Sandwich"
-        }]
+      orders: []
     };
   },
   methods: {
-    orderDateChange() {}
+    orderDateChange() {
+      Axios.get(STLunchHelper.userHistoryURL + this.orderdate).then(
+        response => {
+          this.orders = response.data.orders;
+          STLunchHelper.prepOrdersForReport(this.orders);
+        }
+      );
+    }
   },
   created() {
-    var today = new Date();
-    var fmt = today.toISOString();
-    this.orderdate = fmt.substr(0, 10);
+    this.orderdate = STLunchHelper.dateToString(new Date());
+    this.orderDateChange();
   }
 };
 </script>

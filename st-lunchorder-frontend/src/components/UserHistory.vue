@@ -80,7 +80,6 @@ import Navigation from "./Navigation";
 import { STLunchHelper } from "../_helpers/stlunch";
 import Axios from "axios";
 
-const userHistoryURL = "/ords/st_lunch/get_user_order/on_date/";
 const stlunchOrderURL = "/ords/st_lunch/stlunch_orders/";
 
 export default {
@@ -107,21 +106,12 @@ export default {
         this.orderUpdated = true;
       }
     },
-    convertOptionSelections() {
-      for (var i in this.orders) {
-        let order = this.orders[i];
-        order.total_price = order.items_ordered * order.price;
-        for (var j in order.options) {
-          order.options[j].value = order.options[j].selected.split("\n");
-        }
-      }
-    },
     orderDateChange() {
-      const userId = 64; // TODO: read from localStorage
-      Axios.get(userHistoryURL + userId + "/" + this.orderdate).then(
+      const userId = 63; // TODO: read from localStorage
+      Axios.get(STLunchHelper.userHistoryURL + userId + "/" + this.orderdate).then(
         response => {
           this.orders = response.data.orders;
-          this.convertOptionSelections();
+          STLunchHelper.prepOrdersForReport(this.orders);
         }
       );
       this.orderUpdated = false;

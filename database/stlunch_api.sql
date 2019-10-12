@@ -111,28 +111,31 @@ CREATE OR REPLACE PACKAGE BODY stlunch_api AS
   BEGIN
     OPEN l_cursor FOR
       SELECT order_id AS "order_id"
-      , user_id AS "user_id"
+      , ord.user_id AS "user_id"
       , to_char(
-          SYS_EXTRACT_UTC(cast (order_date as timestamp with time zone))
+          SYS_EXTRACT_UTC(cast (ord.order_date as timestamp with time zone))
        , 'YYYY-MM-DD"T"HH24:MI:SS.ff3"Z') AS "order_date" -- Format ISO 8601 - Jumping through hoops to get UTC time 
-      , supplier_email AS "supplier_email"
-      , supplier_name AS "supplier_name"
-      , menu_category AS "menu_category"
-      , menu_name AS "menu_name"
-      , items_ordered AS "items_ordered"
-      , price AS "price"
-      , user_comment AS "user_comment"
+      , ord.supplier_email AS "supplier_email"
+      , ord.supplier_name AS "supplier_name"
+      , ord.menu_category AS "menu_category"
+      , ord.menu_name AS "menu_name"
+      , ord.items_ordered AS "items_ordered"
+      , ord.price AS "price"
+      , ord.user_comment AS "user_comment"
       , CURSOR(
-        SELECT opt.description AS "description"
-        , opt.selected AS "selected"
-        FROM stlunch_order_options opt
-        WHERE opt.order_id = ord.order_id
-        ORDER BY opt.description
-      ) AS "options"
+          SELECT opt.description AS "description"
+          , opt.selected AS "selected"
+          FROM stlunch_order_options opt
+          WHERE opt.order_id = ord.order_id
+          ORDER BY opt.description
+        ) AS "options"
+      , stlunch_users.user_name AS "user_name"
       FROM stlunch_orders ord
-      WHERE user_id = p_user_id
+      , stlunch_users
+      WHERE stlunch_users.user_id = ord.user_id
+      AND ord.user_id = nvl(p_user_id, ord.user_id)
       AND trunc(order_date) = trunc(p_order_date)
-      ORDER BY supplier_name, menu_category, menu_name;
+      ORDER BY stlunch_users.user_name, supplier_name, menu_category, menu_name;
     RETURN l_cursor;
   END;
   
@@ -359,14 +362,14 @@ BEGIN
 
   ORDS.define_template(
    p_module_name    => 'get_user_order',
-   p_pattern        => 'on_date/:user_id');
+   p_pattern        => 'on_date/:order_date');
 
   ORDS.define_handler(
     p_module_name    => 'get_user_order',
-    p_pattern        => 'on_date/:user_id',
+    p_pattern        => 'on_date/:order_date',
     p_method         => 'GET',
     p_source_type    => ORDS.source_type_plsql,
-    p_source         => 'BEGIN stlunch_api.fetch_orders(p_user_id => :user_id, p_order_date => null); END;',
+    p_source         => 'BEGIN stlunch_api.fetch_orders(p_user_id => null, p_order_date => :order_date); END;',
     p_items_per_page => 0);
 
   COMMIT;
