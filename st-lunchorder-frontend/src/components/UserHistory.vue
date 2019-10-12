@@ -35,9 +35,7 @@
                 <table>
                   <tr v-for="opt in order.options" :key="opt.description" style="font-size: 0.8em;">
                     <td>{{opt.description}}:</td>
-                    <td>
-                      <span v-for="v in opt.value" :key="v" style="margin-right: 2px;">{{v}}</span>
-                    </td>
+                    <td>{{opt.selected}}</td>
                   </tr>
                 </table>
               </div>
@@ -108,12 +106,12 @@ export default {
     },
     orderDateChange() {
       const userId = 63; // TODO: read from localStorage
-      Axios.get(STLunchHelper.userHistoryURL + userId + "/" + this.orderdate).then(
-        response => {
-          this.orders = response.data.orders;
-          STLunchHelper.prepOrdersForReport(this.orders);
-        }
-      );
+      Axios.get(
+        STLunchHelper.userHistoryURL + userId + "/" + this.orderdate
+      ).then(response => {
+        this.orders = response.data.orders;
+        STLunchHelper.prepOrdersForReport(this.orders);
+      });
       this.orderUpdated = false;
     },
     updateOrder() {

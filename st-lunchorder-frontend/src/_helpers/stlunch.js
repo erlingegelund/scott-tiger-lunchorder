@@ -93,8 +93,8 @@ function prepOrdersForReport(orders) {
     for (var i in orders) {
         let order = orders[i];
         order.total_price = order.items_ordered * order.price;
-        for (var j in order.options) {
-            order.options[j].value = order.options[j].selected.split("\n");
-        }
+        // for (var j in order.options) {
+        //     order.options[j].value = order.options[j].selected.split("\n");
+        // }
     }
 }

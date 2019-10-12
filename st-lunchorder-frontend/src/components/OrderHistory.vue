@@ -38,7 +38,10 @@
                   <tr v-for="opt in order.options" :key="opt.description" style="font-size: 0.8em;">
                     <td>{{opt.description}}:</td>
                     <td>
+                      {{opt.selected}}
+<!--
                       <span v-for="v in opt.value" :key="v" style="margin-right: 2px;">{{v}}</span>
+-->
                     </td>
                   </tr>
                 </table>
