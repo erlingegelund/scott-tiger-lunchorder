@@ -28,7 +28,7 @@
           <div class="container">
             <div class="row row-supplier">
               <div class="col col-md-4">Bestilt af</div>
-              <div class="col" style="text-align: right;">Antal bestillinger</div>
+              <div class="col" style="text-align: right;">Antal dage</div>
               <div class="col col-md-3" style="text-align: right;">Samlet pris</div>
               <div class="col col-md-1 no-print"></div>
             </div>
@@ -36,18 +36,18 @@
               class="row row-item"
               v-for="order in orders"
               :key="order.user"
-              @dblclick="toUserHistory(order.user)"
+              @dblclick="toUserHistory(order.user_id)"
             >
-              <div class="col col-md-4">{{order.user}}</div>
-              <div class="col" style="text-align: right;">{{order.itemsOrdered}}</div>
-              <div class="col col-md-3" style="text-align: right;">{{order.priceTotal}}</div>
+              <div class="col col-md-4">{{order.user_name}}</div>
+              <div class="col" style="text-align: right;">{{order.number_days}}</div>
+              <div class="col col-md-3" style="text-align: right;">{{order.price_total}}</div>
               <div class="col col-md-1 no-print">
                 <Octicon name="ellipsis"></Octicon>
               </div>
             </div>
             <div class="row row-supplier">
               <div class="col col-md-4">Total</div>
-              <div class="col" style="text-align: right;">{{allItemsOrdered}}</div>
+              <div class="col" style="text-align: right;">{{allNumberDays}}</div>
               <div class="col col-md-3" style="text-align: right;">{{allPriceTotal}}</div>
               <div class="col col-md-1 no-print"></div>
             </div>
@@ -61,7 +61,10 @@
 import Navigation from "./Navigation";
 import Octicon from "vue-octicon/components/Octicon.vue";
 import { STLunchHelper } from '../_helpers/stlunch'
+import Axios from "axios"
 import "vue-octicon/icons";
+
+const ordersPeriodURL = "/ords/st_lunch/orders_period/get/"
 
 export default {
   components: { Navigation, Octicon },
@@ -69,31 +72,31 @@ export default {
     return {
       orderdateFrom: "",
       orderdateTo: "",
-      orders: [
-        { user: "Hans", itemsOrdered: 22, priceTotal: 417 },
-        { user: "Grete", itemsOrdered: 17, priceTotal: 329 },
-        { user: "Tornerose", itemsOrdered: 2, priceTotal: 84 }
-      ]
+      orders: []
     };
   },
   computed: {
-    allItemsOrdered() {
+    allNumberDays() {
       var nitems = 0;
       for (var i in this.orders) {
-        nitems += this.orders[i].itemsOrdered;
+        nitems += this.orders[i].number_days;
       }
       return nitems;
     },
     allPriceTotal() {
       var price = 0;
       for (var i in this.orders) {
-        price += this.orders[i].priceTotal;
+        price += this.orders[i].price_total;
       }
       return price;
     }
   },
   methods: {
-    orderDateChange() {},
+    orderDateChange() {
+      Axios.get(ordersPeriodURL+this.orderdateFrom+"/"+this.orderdateTo).then(response => {
+        this.orders = response.data.items;
+      })
+    },
     toUserHistory(user) {
       this.$router.push({
         name: "UserHistory",
@@ -110,6 +113,8 @@ export default {
     this.orderdateTo = STLunchHelper.dateToString(today);
     today.setMonth(today.getMonth() - 1);
     this.orderdateFrom = STLunchHelper.dateToString(today);
+
+    this.orderDateChange();
   }
 };
 </script>

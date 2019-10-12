@@ -255,7 +255,24 @@ BEGIN
                         p_source_type    => ORDS.source_type_collection_feed,
                         p_source         => 'SELECT * FROM stlunch_menu_options WHERE supplier_menu_id = :menu_id ORDER BY description',
                         p_items_per_page => 0);
-
+                        
+    ORDS.define_service(p_module_name    => 'stlunch_orders_period',
+                        p_base_path      => 'orders_period/',
+                        p_pattern        => 'get/:p_d1/:p_d2',
+                        p_method         => 'GET',
+                        p_source_type    => ORDS.source_type_collection_feed,
+                        p_source         =>
+'SELECT u.user_id AS "user_id"
+, u.user_name AS "user_name"
+, COUNT(DISTINCT o.order_date) AS "number_days"
+, SUM(o.items_ordered * o.price) AS "price_total"
+FROM stlunch_users u, stlunch_orders o
+WHERE u.user_id = o.user_id
+AND o.order_date BETWEEN to_date(:p_d1,''YYYY-MM-DD'') AND to_date(:p_d2,''YYYY-MM-DD'')
+GROUP BY u.user_id, u.user_name
+ORDER BY u.user_name',
+                        p_items_per_page => 0);
+                        
     commit;
 
 END;

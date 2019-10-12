@@ -76,7 +76,17 @@ function validateMail(email) {
 }
 
 function dateToString(date) {
-    return date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate()
+    // date.toISOString() anvender altid UTC tidszone. 
+    // fordi jeg ikke er sikker på tidspunkt har lavet denne hjemmestrikkede funktion
+    let ret = date.getFullYear() + "-";
+    let month = (date.getMonth() + 1);
+    if (month < 10) ret += "0";
+    ret += month.toString() + "-";
+    let day = date.getDate()
+    if (day < 10) ret += "0";
+    ret += day.toString();
+    
+    return ret;
 }
 
 function prepOrdersForReport(orders) {
