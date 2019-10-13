@@ -303,30 +303,28 @@ export default {
     Axios.get(supplierCategoriesURL + this.order.user_id.toString()).then(
       response => {
         var suppliersCategories = response.data.suppliers;
-        // Hent menu for brugerens sidst bestilte leverandør / kategori
-        var suppDisplay = suppliersCategories.filter(s => s.display === "Y");
-        if (suppDisplay && suppDisplay.length > 0) {
-          var catDisplay = suppDisplay[0].categories.filter(
-            m => m.display === "Y"
-          );
-          if (catDisplay && catDisplay.length > 0) {
-            Axios.get(
-              menusOptionsURL + suppDisplay[0].id + "/" + catDisplay[0].id
-            ).then(response => {
-              catDisplay[0].menu_items = self.prepareMenuItems(
-                response.data.menu_items
-              );
-              this.suppliers = suppliersCategories;
-            });
-          }
-        } else {
-          for (let i in suppliersCategories) {
-            for (let j in suppliersCategories[i].categories) {
-              suppliersCategories[i].categories[j].menu_items = [];
+        for (let i in suppliersCategories) {
+          for (let j in suppliersCategories[i].categories) {
+            suppliersCategories[i].categories[j].menu_items = [];
+            // Hent menu for brugerens sidst bestilte leverandør / kategori
+            if (
+              suppliersCategories[i].display === "Y" &&
+              suppliersCategories[i].categories[j].display === "Y"
+            ) {
+              Axios.get(
+                menusOptionsURL +
+                  suppliersCategories[i].id +
+                  "/" +
+                  suppliersCategories[i].categories[j].id
+              ).then(response => {
+                suppliersCategories[i].categories[j].menu_items = self.prepareMenuItems(
+                  response.data.menu_items
+                );
+              });
             }
           }
-          this.suppliers = suppliersCategories;
         }
+        this.suppliers = suppliersCategories;
       }
     );
   }

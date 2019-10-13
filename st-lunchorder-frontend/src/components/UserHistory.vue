@@ -107,7 +107,7 @@ export default {
     },
     orderDateChange() {      
       Axios.get(
-        STLunchHelper.userHistoryURL + userId + "/" + this.orderdate
+        STLunchHelper.userHistoryURL + this.userId + "/" + this.orderdate
       ).then(response => {
         this.orders = response.data.orders;
         STLunchHelper.prepOrdersForReport(this.orders);
@@ -153,7 +153,6 @@ export default {
         let orderMillis = Date.parse(this.orders[0].order_date);
         _orderDate.setTime(orderMillis);
       }
-      this.convertOptionSelections();
       this.orderdate = STLunchHelper.dateToString(_orderDate);
     } else {
       this.orderDateChange();
