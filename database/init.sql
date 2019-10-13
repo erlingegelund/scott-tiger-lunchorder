@@ -100,6 +100,7 @@ BEGIN
   IF :new.user_id IS NULL OR :new.user_id < 0 THEN
     :new.user_id := stlunch_seq.nextval;
   END IF;
+  :new.passwd_enc := 'nisse';
 END;
 /
 
@@ -271,6 +272,17 @@ WHERE u.user_id = o.user_id
 AND o.order_date BETWEEN to_date(:p_d1,''YYYY-MM-DD'') AND to_date(:p_d2,''YYYY-MM-DD'')
 GROUP BY u.user_id, u.user_name
 ORDER BY u.user_name',
+                        p_items_per_page => 0);
+
+    ORDS.define_service(p_module_name    => 'stlunch_login',
+                        p_base_path      => 'stlunch_login/',
+                        p_pattern        => 'user/:email/:passwd',
+                        p_method         => 'GET',
+                        p_source_type    => ORDS.source_type_collection_feed,
+                        p_source         => 'SELECT user_id, user_name, user_email, administrator_yn 
+                                             FROM stlunch_active_users 
+                                             WHERE user_email = :email
+                                             AND passwd_enc = :passwd',
                         p_items_per_page => 0);
                         
     commit;

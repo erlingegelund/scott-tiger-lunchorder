@@ -12,8 +12,14 @@
           <b-dropdown-item :to="{name: 'UserHistory'}">Mine bestillinger</b-dropdown-item>
           <b-dropdown-item :to="{name: 'OrderHistory'}">Dagens bestillinger</b-dropdown-item>
           <b-dropdown-item :to="{name: 'MonthlyReport'}">Månedsrapport</b-dropdown-item>
-          <b-dropdown-item :to="{name: 'Supplier'}" v-show="isAdministrator()">Leverandøradministration</b-dropdown-item>
-          <b-dropdown-item :to="{name: 'Category'}" v-show="isAdministrator()">Kategoriadministration</b-dropdown-item>
+          <b-dropdown-item
+            :to="{name: 'Supplier'}"
+            v-show="isAdministrator()"
+          >Leverandøradministration</b-dropdown-item>
+          <b-dropdown-item
+            :to="{name: 'Category'}"
+            v-show="isAdministrator()"
+          >Kategoriadministration</b-dropdown-item>
           <b-dropdown-item :to="{name: 'UserMgmt'}" v-show="isAdministrator()">Brugeradministration</b-dropdown-item>
         </b-dropdown>
       </div>
@@ -22,13 +28,18 @@
       <h1 class="st-head">scott/tiger frokostbestilling</h1>
     </div>
     <div class="col col-md-2" style="text-align: right;">
-      <b-dropdown size="sm" variant="link" right toggle-class="text-decoration-none" v-show="showNavIcon">
+      <b-dropdown
+        size="sm"
+        variant="link"
+        right
+        toggle-class="text-decoration-none"
+        v-show="showNavIcon"
+      >
         <template v-slot:button-content>{{getUser()}}</template>
         <b-dropdown-item @click="logoff()">Log af</b-dropdown-item>
       </b-dropdown>
     </div>
   </div>
-
 </template>
 <script>
 import Octicon from "vue-octicon/components/Octicon.vue";
@@ -41,18 +52,30 @@ export default {
   },
   props: ["showNavIcon"],
   methods: {
+    logoff() {
+      sessionStorage.removeItem("user");
+      this.$router.push({ name: "Login" });
+    },
     getUser() {
-      // TODO: Change to read from localStorage
-      return "Herman Bang";
+      // Læs bruger info fra sessionStorage
+      let user = JSON.parse(sessionStorage.getItem("user"));
+      if (user) {
+        return user.user_name;
+      } else {
+        return "";
+      }
     },
     isAdministrator() {
-      // TODO: Change to read from localStorage
-      return true
-    }, 
-    logoff() {
-      localStorage.removeItem("user")
-      this.$router.push({name: 'Login'})
+      // Læs bruger info fra sessionStorage
+      let user = JSON.parse(sessionStorage.getItem("user"));
+      if (user) {
+        return user.administrator_yn === "Y";
+      } else {
+        return false;
+      }
     }
+  },
+  computed: {
   }
 };
 </script>

@@ -287,7 +287,7 @@ export default {
     return {
       now: Date.now(),
       order: {
-        user_id: 64, // TODO: hent fra localStorage
+        user_id: JSON.parse(sessionStorage.getItem("user")).user_id, // Læs bruger info fra sessionStorage
         items: []
       },
       suppliers: []

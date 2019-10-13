@@ -42,6 +42,10 @@
 </template>
 <script>
 import Navigation from "./Navigation.vue";
+import Axios from "axios";
+
+const loginURL = "/ords/st_lunch/stlunch_login/user/";
+
 export default {
   components: { Navigation },
   data() {
@@ -56,8 +60,7 @@ export default {
   },
   created() {
     // reset login status
-    //userService.logout();
-    localStorage.removeItem("user");
+    sessionStorage.removeItem("user");
 
     // get return url from route parameters or default to '/'
     this.returnUrl = this.$route.query.returnUrl || "/";
@@ -72,17 +75,19 @@ export default {
         return;
       }
 
+      var router = this.$router;
       this.loading = true;
-      localStorage.setItem("user", username);
-      this.$router.push({ name: "Order" });
-      // userService.login(username, password)
-      //     .then(
-      //         user => router.push(this.returnUrl),
-      //         error => {
-      //             this.error = error;
-      //             this.loading = false;
-      //         }
-      //     );
+      Axios.get(loginURL + username + "/" + password).then(response => {
+        var users = response.data.items;
+        if (users && users.length > 0) {
+          var user = JSON.stringify(users[0]);
+          sessionStorage.setItem("user", user);
+          router.push(this.returnUrl);
+        } else {
+          this.error = "Brugernavn eller kodeord er forkert";
+          this.loading = false;
+        }
+      });
     }
   }
 };

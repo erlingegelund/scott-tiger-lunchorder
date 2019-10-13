@@ -85,6 +85,7 @@ export default {
   components: { Navigation },
   data() {
     return {
+      userId: JSON.parse(sessionStorage.getItem("user")).user_id, // Læs bruger info fra sessionStorage
       orderdate: "",
       orderUpdated: false,
       now: Date.now(),
@@ -104,8 +105,7 @@ export default {
         this.orderUpdated = true;
       }
     },
-    orderDateChange() {
-      const userId = 63; // TODO: read from localStorage
+    orderDateChange() {      
       Axios.get(
         STLunchHelper.userHistoryURL + userId + "/" + this.orderdate
       ).then(response => {
