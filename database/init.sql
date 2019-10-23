@@ -1,10 +1,13 @@
+/*
 CREATE user st_lunch identified BY st_lunch;
 GRANT connect, resource TO st_lunch;
 ALTER USER st_lunch quota unlimited ON users;
 
 CONN st_lunch/st_lunch@//localhost:1539/xepdb1
+*/
 
 DROP SEQUENCE stlunch_seq;
+DROP TABLE stlunch_order_options PURGE;
 DROP TABLE stlunch_orders PURGE;
 DROP TABLE stlunch_menu_options PURGE;
 DROP TABLE stlunch_supplier_menus PURGE;
@@ -73,7 +76,7 @@ CREATE TABLE stlunch_orders (
 , supplier_name VARCHAR2(40 CHAR) NOT NULL
 , menu_category VARCHAR2(40 CHAR) NOT NULL
 , menu_name VARCHAR2(40 CHAR) NOT NULL
-, items_ordered NUMBER(4) NOT NULL,
+, items_ordered NUMBER(4) NOT NULL
 , price NUMBER(6,2) NOT NULL
 , user_comment VARCHAR2(255 CHAR)
 , CONSTRAINT stlunch_order_pk PRIMARY KEY (order_id)
