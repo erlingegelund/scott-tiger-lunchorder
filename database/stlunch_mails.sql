@@ -138,7 +138,7 @@ CREATE OR REPLACE PACKAGE BODY stlunch_mails AS
             l_body_html := l_body_html||'<b>'||l_order_memo||'</b><br>';
          END IF;
 
-         l_body_html := l_body_html||'<table><tr><th>Bestilling</th><th>Antal</th><th>Pris</th><th style="width: 216px;">Valg</th><th>Bestilt af</th><th>Note</th></tr>';
+         l_body_html := l_body_html||'<table><tr><th>Bestilling</th><th>Antal</th><th>Pris</th><th>Valg</th><th>Bestilt af</th><th>Note</th></tr>';
          FOR rec_order IN (
             SELECT u1.user_name
             , o1.menu_category
