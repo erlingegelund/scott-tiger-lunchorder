@@ -91,7 +91,7 @@ CREATE OR REPLACE PACKAGE BODY stlunch_api AS
                     , replace(mopt.selectables, chr(13), '') AS "selectables"
                FROM stlunch_menu_options mopt
                WHERE mopt.supplier_menu_id = supm.supplier_menu_id
-               ORDER BY mopt.description) AS "options"
+               ORDER BY mopt.sort_order, mopt.description) AS "options"
       FROM stlunch_supplier_menus supm
       WHERE supm.supplier_id = p_supplier_id
       AND supm.category_id = p_category_id
@@ -266,9 +266,10 @@ CREATE OR REPLACE PACKAGE BODY stlunch_api AS
           l_option_tab(l_option_tab.last).order_id := l_order_tab(l_order_tab.LAST).order_id;
           l_option_tab(l_option_tab.last).selected := REPLACE(l_selected,'"','');
           FOR rec IN (
-              SELECT description, additional_price FROM stlunch_menu_options WHERE menu_option_id = l_option_id
+              SELECT description, additional_price, sort_order FROM stlunch_menu_options WHERE menu_option_id = l_option_id
           ) LOOP
             l_option_tab(l_option_tab.last).description := rec.description;
+            l_option_tab(l_option_tab.last).sort_order := rec.sort_order;
             l_price := l_price + nvl(rec.additional_price,0);
           END LOOP;
         END IF;

@@ -11,9 +11,10 @@
         <div class="col">
           <div class="container-fluid">
             <div class="row row-supplier">
-              <div class="col col-md-4">Navn</div>
-              <div class="col col-md-4">e-mail</div>
-              <div class="col col-md-2">Telefonnummer</div>
+              <div class="col col-md-3">Navn</div>
+              <div class="col col-md-3">e-mail</div>
+              <div class="col col-md-1">Telefon</div>
+              <div class="col col-md-3">Memo på e-mail</div>
               <div class="col" style="text-align: right;">
                 <span @click="add()">
                   <octicon name="plus"></octicon>
@@ -26,7 +27,7 @@
               :key="sup.vkey"
               @dblclick="showMenu(sup)"
             >
-              <div class="col col-md-4">
+              <div class="col col-md-3">
                 <b-form-input
                   type="text"
                   size="sm"
@@ -37,7 +38,7 @@
                 ></b-form-input>
                 <span v-else>{{sup.supplier_name}}</span>
               </div>
-              <div class="col col-md-4">
+              <div class="col col-md-3">
                 <b-form-input
                   type="email"
                   size="sm"
@@ -48,7 +49,7 @@
                 ></b-form-input>
                 <span v-else>{{sup.supplier_email}}</span>
               </div>
-              <div class="col col-md-2">
+              <div class="col col-md-1">
                 <b-form-input
                   type="number"
                   size="sm"
@@ -56,6 +57,15 @@
                   v-if="sup.edit == true"
                 ></b-form-input>
                 <span v-else>{{sup.supplier_phone}}</span>
+              </div>
+              <div class="col col-md-3">
+                <b-form-input
+                  type="text"
+                  size="sm"
+                  v-model="sup.order_memo"
+                  v-if="sup.edit == true"
+                ></b-form-input>
+                <span v-else>{{sup.order_memo}}</span>
               </div>
               <div class="col" style="text-align: right;">
                 <span class="btn-check" v-if="sup.edit == true" @click="submit(sup)">
@@ -102,6 +112,7 @@ export default {
         supplier_name: "",
         supplier_email: "",
         supplier_phone: "",
+        order_memo: "",
         edit: true
       };
       this.suppliers.push(supplier);

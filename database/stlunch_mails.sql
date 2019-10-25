@@ -95,153 +95,100 @@ CREATE OR REPLACE PACKAGE BODY stlunch_mails AS
    -- Public procedures and functions
    -- -------------------------------
    PROCEDURE send_daily_mails IS
-      l_id NUMBER;
+      TYPE tbl_order_options IS TABLE OF stlunch_order_options%ROWTYPE;
+      l_order_options tbl_order_options;
+--      l_id NUMBER;
       l_body_html VARCHAR2(4000);
       l_order_date VARCHAR2(10) := TO_CHAR(sysdate,'DD.MM.YYYY');
-      l_supplier stlunch_suppliers.supplier_name%TYPE := 'FirstRecord';
+--      l_supplier stlunch_suppliers.supplier_name%TYPE := 'FirstRecord';
+--      l_supplier_id stlunch_suppliers.supplier_id%TYPE;
+      l_order_memo stlunch_suppliers.order_memo%TYPE;
       l_total NUMBER;
    BEGIN
-      null;
-/*      
-      FOR c1 in (
-      SELECT sup.supplier_id,
-         sup.supplier_name,
-         sup.mail_address
-      FROM suppliers sup,
-         sm_group_lookup sgl,
-         smoerebrod smb,
-         lunch_order lo,
-         lo_row lr
-      WHERE sup.supplier_id = sgl.supplier_id
-      AND sgl.sm_group_id = smb.sm_group_id
-      AND lr.lo_row_item  = smb.sm_id
-      AND lo.order_id     = lr.lo_order_id
-      AND TRUNC(lo.order_date) = TRUNC(sysdate)
-      GROUP BY sup.supplier_id,
-         sup.supplier_name,
-         sup.mail_address
+      FOR c1 IN (
+         SELECT DISTINCT supplier_email, supplier_name, order_date
+         FROM stlunch_orders
+         WHERE order_date = TRUNC(sysdate)
+         ORDER BY supplier_email
       ) LOOP
-         l_body_html := '<html><head><style>';
-         l_body_html := l_body_html||'table {font-family: arial, sans-serif;font-size:	10px; border-collapse:  collapse; width: 500px;}';
-         l_body_html := l_body_html||'td, th {border: 1px solid #dddddd;text-align: left;padding: 8px;width: auto; overflow: hidden; word-wrap: break-word;}';
-         l_body_html := l_body_html||'tr:nth-child(even) {background-color: #dddddd;}';
-         l_body_html := l_body_html||'</style></head>';
-         l_body_html := l_body_html||'<body>';
-         l_body_html := l_body_html||'<b>Her er Scott/Tigers frokostbestilling for '||l_order_date||'</b><br>';
-         IF c1.supplier_id = 1 THEN
-         l_body_html := l_body_html||'<b>Husk grovbrød til salaterne</b><br>';
-         l_body_html := l_body_html||'<table><tr><th>Bestilling</th><th>Antal</th><th>Pris</th><th>Note</th></tr>';
-         ELSIF c1.supplier_id = 2 THEN
-         l_body_html := l_body_html||'<table><tr><th>Bestilling</th><th>Antal</th><th>Pris</th><th>Brød</th><th>Bund</th><th>Dressing</th><th>Kød</th><th>Tilbehør</th></tr>';
-         ELSE
-         l_body_html := l_body_html||'<table><tr><th>Bestilling</th><th>Antal</th><th>Pris</th><th>Note</th></tr>';
-         END IF;
          l_total := 0;
-         FOR c2 IN (
-            SELECT smb.name,
-               APEX_UTIL.GET_FIRST_NAME(p_username => APEX_UTIL.GET_USERNAME(lo.ordered_by)) || ' '||APEX_UTIL.GET_LAST_NAME(p_username => APEX_UTIL.GET_USERNAME(lo.ordered_by)) ordered_by,
-               lr.lo_row_qty,
-               lr.stor price,
-               lr.lo_adm note,
-               lr.attribute1,
-               lr.attribute2,
-               lr.attribute3,
-               lr.attribute4,
-               lr.attribute5
-            FROM suppliers sup,
-               sm_group_lookup sgl,
-               smoerebrod smb,
-               lunch_order lo,
-               lo_row lr
-            WHERE sup.supplier_id = sgl.supplier_id
-            AND sgl.sm_group_id = smb.sm_group_id
-            AND lr.lo_row_item  = smb.sm_id
-            AND lo.order_id     = lr.lo_order_id
-            AND TRUNC(lo.order_date) = TRUNC(sysdate)
-            AND sup.supplier_id = c1.supplier_id
-            ORDER BY sgl.sm_group,1,4
-         ) LOOP
-            IF c1.supplier_id = 1 THEN
-               l_body_html := l_body_html||'<tr><td>'||c2.name||'</td><td>'||c2.lo_row_qty||'</td><td>'||c2.price||'</td><td>'||c2.note||'</td></tr>';
-            ELSIF c1.supplier_id = 2 THEN
-               l_body_html := l_body_html||'<tr><td>'||c2.name||' til '||c2.ordered_by||'</td><td>'||c2.lo_row_qty||'</td><td>'||c2.price||'</td><td>'||c2.attribute1||'</td><td>'||c2.attribute2||'</td><td>'||c2.attribute3||'</td><td>'||c2.attribute4||'</td><td>'||c2.attribute5||'</td></tr>';
-            ELSE
-               l_body_html := l_body_html||'<tr><td>'||c2.name||' til '||c2.ordered_by||'</td><td>'||c2.lo_row_qty||'</td><td>'||c2.price||'</td><td>'||c2.attribute1||'</td><td>'||c2.attribute2||'</td><td>'||c2.attribute3||'</td><td>'||c2.attribute4||'</td><td>'||c2.attribute5||'</td></tr>';
-            END IF;
-            l_total     := l_total + c2.price;
-         END LOOP;
-         l_body_html := l_body_html||'</table></body>';
-         l_body_html := l_body_html||'<br><b>Total for bestilling: '||TO_CHAR(l_total,'999G999D00')||' kr.</b><br>';
-         l_body_html := l_body_html||'<br><b>Med venlig hilsen<br><br>Scott-Tiger</b></html>';
-         wwv_flow_api.set_security_group_id;
-         l_id := APEX_MAIL.SEND(
-            p_to        =>  c1.mail_address,
-            p_from      => 'info@scott-tiger.dk',
-            p_cc        => 'helle.bohn@scott-tiger.dk,pia.molgaard@scott-tiger.dk, maria.Kragh@scott-tiger.dk',
-            p_subj      => c1.supplier_name||' - Scott/Tiger frokostbestilling til '||l_order_date,
-            p_body      => 'Fejl i mail layout. Venligst send mail retur til Helle Bohn, Scott/Tiger',
-            p_body_html => l_body_html
-         );
-         APEX_MAIL.PUSH_QUEUE;
-         COMMIT;
-      END LOOP;
-      l_body_html := '<html><head><style>';
-      l_body_html := l_body_html||'table {font-family: arial, sans-serif; border-collapse:  collapse; width: 100%;}';
-      l_body_html := l_body_html||'td, th {border: 1px solid #dddddd;text-align: left;padding: 8px;}';
-      l_body_html := l_body_html||'tr:nth-child(even) {background-color: #dddddd;}';
-      l_body_html := l_body_html||'</style></head>';
-      l_body_html := l_body_html||'<body>';
-      l_body_html := l_body_html||'<b>Oversigt over Scott/Tigers frokostbestilling for '||l_order_date||'</b><br>';
-      l_total     := 0;
-      FOR c3 IN (
-         SELECT supplier_name,
-            APEX_UTIL.GET_FIRST_NAME(p_username => APEX_UTIL.GET_USERNAME(lo.ordered_by)) || ' '||APEX_UTIL.GET_LAST_NAME(p_username => APEX_UTIL.GET_USERNAME(lo.ordered_by)) ordered_by,
-            sgl.sm_group name,
-            SUM(lr.lo_row_qty) lo_row_qty,
-            SUM(lr.stor) price
-         FROM suppliers sup,
-            sm_group_lookup sgl,
-            smoerebrod smb,
-            lunch_order lo,
-            lo_row lr
-            -- ,sidedish sd
-         WHERE sup.supplier_id = sgl.supplier_id
-         AND sgl.sm_group_id = smb.sm_group_id
-         AND lr.lo_row_item  = smb.sm_id
-         AND lo.order_id     = lr.lo_order_id
-         AND TRUNC(lo.order_date) = TRUNC(sysdate)
-         GROUP BY  supplier_name,
-            APEX_UTIL.GET_FIRST_NAME(p_username => APEX_UTIL.GET_USERNAME(ordered_by)) || ' '||APEX_UTIL.GET_LAST_NAME(p_username => APEX_UTIL.GET_USERNAME(ordered_by)),
-            sgl.sm_group
-         ORDER BY 1,2
-      ) LOOP
-         IF c3.supplier_name <> l_supplier  THEN
-            IF l_supplier <> 'FirstRecord' THEN
-               l_body_html := l_body_html||'</table>';
-               l_body_html := l_body_html||'<br><b>Total for leverandør: '||TO_CHAR(l_total,'999G999D00')||' kr.</b><br>';
-            END IF;
-            l_body_html := l_body_html||'<br><b><u>leverandør: '||c3.supplier_name||'</u></b><br>';
-            l_body_html := l_body_html||'<table><tr><th>Bestilt af</th><th>Bestilling</th><th>Antal</th><th>Pris</th></tr>';
-            l_supplier  := c3.supplier_name;
-            l_total     := 0;
+--         l_supplier_id := 0;
+         l_order_memo := null;
+         
+         FOR rec IN (
+            SELECT supplier_id, order_memo 
+            FROM stlunch_suppliers
+            WHERE stlunch_suppliers.supplier_email = c1.supplier_email
+        ) LOOP
+--           l_supplier_id := rec.supplier_id;
+           l_order_memo := rec.order_memo;
+        END LOOP;
+         
+         l_body_html := '<html><head><style>'||utl_tcp.crlf;
+         l_body_html := l_body_html||'table {font-family: arial, sans-serif;font-size:	10px; border-collapse:  collapse; width: 595px;}'||utl_tcp.crlf;
+         l_body_html := l_body_html||'td, th {border: 1px solid #dddddd;text-align: left;padding: 8px;width: auto; overflow: hidden; word-wrap: break-word;}'||utl_tcp.crlf;
+         l_body_html := l_body_html||'tr:nth-child(even) {background-color: #dddddd;}'||utl_tcp.crlf;
+         l_body_html := l_body_html||'.opttable table {width: auto;}'||utl_tcp.crlf;
+         l_body_html := l_body_html||'.opttable td {border: none; padding: 0px;}'||utl_tcp.crlf;
+         l_body_html := l_body_html||'.opttable tr {background-color: transparent;}'||utl_tcp.crlf;
+         l_body_html := l_body_html||'</style></head>'||utl_tcp.crlf;
+         l_body_html := l_body_html||'<body>'||utl_tcp.crlf;
+         l_body_html := l_body_html||'<b>Her er Scott/Tigers frokostbestilling for '||l_order_date||'</b><br>'||utl_tcp.crlf;
+         IF l_order_memo IS NOT NULL THEN
+            l_body_html := l_body_html||'<b>'||l_order_memo||'</b><br>';
          END IF;
-         l_body_html := l_body_html||'<tr><td>'||c3.ordered_by||'</td><td>'||c3.name||'</td><td>'||c3.lo_row_qty||'</td><td>'||c3.price||'</td></tr>';
-         l_total     := l_total + c3.price;
-      END LOOP;
-      l_body_html := l_body_html||'</table></body>';
-      l_body_html := l_body_html||'<br><b>Total for leverandør: '||TO_CHAR(l_total,'999G999D00')||' kr.</b><br>';
-      l_body_html := l_body_html||'<br><b>Med venlig hilsen<br><br>Frokost bestilling systemet</b></html>';
-      wwv_flow_api.set_security_group_id;
-      l_id := APEX_MAIL.SEND(
-         p_to        => 'pia.molgaard@scott-tiger.dk',
-         p_from      => 'info@scott-tiger.dk',
-         p_subj      => 'Scott/Tiger oversigt over frokostbestilling for '||l_order_date,
-         p_body      => 'Fejl i mail layout. Venligst send mail retur til Helle Bohn, Scott/Tiger',
-         p_body_html => l_body_html
+
+         l_body_html := l_body_html||'<table><tr><th>Bestilling</th><th>Antal</th><th>Pris</th><th style="width: 216px;">Valg</th><th>Bestilt af</th><th>Note</th></tr>';
+         FOR rec_order IN (
+            SELECT u1.user_name
+            , o1.menu_category
+            , o1.menu_name
+            , o1.items_ordered
+            , o1.price
+            , o1.user_comment
+            , o1.order_id
+            FROM stlunch_users u1
+            , stlunch_orders o1
+            WHERE u1.user_id = o1.user_id
+            AND o1.order_date = c1.order_date
+            AND o1.supplier_email = c1.supplier_email
+            ORDER BY 2, 3, 1
+         ) LOOP
+           SELECT * 
+           BULK COLLECT INTO l_order_options
+           FROM stlunch_order_options oo 
+           WHERE oo.order_id = rec_order.order_id
+           ORDER BY sort_order, description;
+           l_body_html := l_body_html||'<tr>';
+           l_body_html := l_body_html||'<td>'||rec_order.menu_name||'</td>';
+           l_body_html := l_body_html||'<td>'||rec_order.items_ordered||'</td>';
+           l_body_html := l_body_html||'<td>'||to_char(rec_order.items_ordered*rec_order.price)||'</td>';
+           l_body_html := l_body_html||'<td>';
+           IF l_order_options.count > 0 THEN
+              l_body_html := l_body_html||'<div class="opttable"><table>';
+              FOR i IN l_order_options.first..l_order_options.last LOOP
+                 l_body_html := l_body_html||'<tr><td style="width: 75px;">'||l_order_options(i).description||'</td><td>'||l_order_options(i).selected||'</td></tr>';
+              END LOOP;
+              l_body_html := l_body_html||'</table></div>';
+           END IF;
+           l_body_html := l_body_html||'</td>';
+           l_body_html := l_body_html||'<td>'||rec_order.user_name||'</td>';
+           l_body_html := l_body_html||'<td>'||rec_order.user_comment||'</td>';
+           l_body_html := l_body_html||'</tr>';
+           
+           l_total := l_total + (rec_order.items_ordered*rec_order.price);
+         END LOOP;
+         l_body_html := l_body_html||'</table>';
+         l_body_html := l_body_html||'<br><b>Total for bestilling: '||TO_CHAR(l_total,'999G999D00')||' kr.</b><br>';
+         l_body_html := l_body_html||'<br><b>Med venlig hilsen<br><br>Scott-Tiger</b></body></html>';
+         
+         send_mail(
+           p_subject => c1.supplier_name||' - Scott/Tiger frokostbestilling til '||l_order_date
+         , p_body_html => l_body_html
+         , p_recipient => c1.supplier_email
       );
-      APEX_MAIL.PUSH_QUEUE;
-      COMMIT;
-*/      
+
+      END LOOP;
    END send_daily_mails;
 
    PROCEDURE send_month_report IS

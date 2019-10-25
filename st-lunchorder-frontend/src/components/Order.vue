@@ -70,8 +70,8 @@
                                 <span v-show="opt.mandatory_yn === 'Y'">*</span>
                                 {{opt.description}}
                                 <span
-                                  v-show="opt.additionalPrice"
-                                >(+ {{opt.additionalPrice}} kr)</span>
+                                  v-show="opt.additional_price"
+                                >(+ {{opt.additional_price}} kr)</span>
                               </div>
                               <multiselect
                                 v-model="opt.value"
@@ -235,8 +235,14 @@ export default {
                 ) {
                   let option = {
                     option_id: orderedMenu.options[n].id,
-                    selected: orderedMenu.options[n].value
+                    selected: []
                   };
+                  if(typeof orderedMenu.options[n].value == "string") {
+                    option.selected[0] = orderedMenu.options[n].value;
+                  } else {
+                    option.selected = orderedMenu.options[n].value;
+                  }
+
                   let l = orderedItem[0].options.length;
                   orderedItem[0].options[l] = option;
                 }

@@ -33,7 +33,7 @@ opret fil /etc/httpd/conf.d/default-site.conf med inhold:
 ## tillad Apache at fungere som reverse proxy i SELinux
 /usr/sbin/setsebool -P httpd_can_network_connect 1
 
-## �ben firewall for HTTP og Oracle Enterprise Manager:
+## Åben firewall for HTTP:
 sudo firewall-cmd --zone=public --permanent --add-service=http
 
 ## Build front-end og flyt til http doc dir

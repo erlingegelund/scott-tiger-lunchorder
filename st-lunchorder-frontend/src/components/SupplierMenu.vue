@@ -89,7 +89,7 @@
                     </span>
                   </div>
                 </div>
-                <div class="row compact-row" v-show="(m.display && m.description)|| m.edit">
+                <div class="row compact-row" v-show="(m.display)|| m.edit">
                   <div class="col col-md-1"/>
                   <div class="col col-md-1">Beskrivelse</div>
                   <div class="col col-md-5">
@@ -104,7 +104,7 @@
                     <span v-else>{{m.description}}</span>
                   </div>
                 </div>
-                <div class="row row-category compact-row" v-show="m.display || m.edit">
+                <div class="row row-category compact-row" v-show="(m.display && m.options.length > 0) || m.edit">
                   <div class="col col-md-1" />
                   <div class="col col-md-6">Valg</div>
                   <div class="col" style="text-align: right;">
@@ -145,17 +145,26 @@
                       :disabled="!m.edit"
                       v-model="opt.multiple_yn"
                     >Flere muligheder kan vælges</b-form-checkbox>
-                    <b-input
-                      type="number"
-                      placeholder="Pristillæg"
-                      size="sm"
-                      :disabled="!m.edit"
-                      v-model="opt.additionalPrice"
-                    />
+                    <b-input-group size="sm" prepend="Sortering: ">
+                      <b-form-input
+                        type="number"
+                        size="sm"
+                        :disabled="!m.edit"
+                        v-model="opt.sort_order"
+                      />
+                    </b-input-group>
+                    <b-input-group size="sm" prepend="Pristillæg: ">
+                      <b-form-input
+                        type="number"
+                        size="sm"
+                        :disabled="!m.edit"
+                        v-model="opt.additional_price"
+                      />
+                    </b-input-group>
                   </div>
                   <div class="col col-md-3">
                     <b-form-textarea
-                      rows="5"
+                      rows="6"
                       placeholder="Muligheder"
                       size="sm"
                       :disabled="!m.edit"
@@ -291,7 +300,8 @@ export default {
         mandatory_yn: "N",
         multiple_yn: "N",
         selectables: "",
-        additionalPrice: null
+        additional_price: null,
+        sort_order: (m.options.length + 1)
       };
       m.options.push(opt);
       this.setVKey(m);
@@ -308,12 +318,16 @@ export default {
       return Axios.get(STLunchHelper.categoryURL);
     },
     fetchMenu(supplierId) {
-      return Axios.get(supSupplierMenuURL + supplierId);
+      return Axios.get(supSupplierMenuURL + supplierId);;
     },
     fetchMenuOptions(m, display, edit, submitted) {
-      if (!m.options) {
+      if (!m.options || m.options.length == 0) {
         Axios.get(menuOptionsURL + m.supplier_menu_id).then(response => {
-          m.options = response.data.items;
+          let options = response.data.items;
+          m.options = options.sort((o1,o2) => 
+            ((o1.sort_order && o2.sort_order && o1.sort_order > o2.sort_order) ||
+            ((!o1.sort_order || !o2.sort_order) && o1.description > o2.description))
+            ? 1 : -1);
           m.display = display;
           m.edit = edit;
           m.submitted = submitted;
@@ -383,6 +397,7 @@ export default {
         var menuItems = fmenu.data.items;
         // Sæt vkey og category_name i menu
         for (var i in menuItems) {
+          menuItems[i].options = [];
           _self.setVKey(menuItems[i]);
           _self.setCategoryName(menuItems[i]);
         }

@@ -9,7 +9,7 @@ INSERT INTO stlunch_categories (category_id,category_name) VALUES (6,'Ostemadder
 
 INSERT INTO stlunch_suppliers (supplier_id,supplier_email,supplier_name,supplier_phone) VALUES (10,'slagterjohnoglise@live.dk','Slagter Lise og John','43990134');
 INSERT INTO stlunch_suppliers (supplier_id,supplier_email,supplier_name,supplier_phone) VALUES (11,'kontakt@coffee-sandwich.dk','Coffee & Sandwich','43432630');
-INSERT INTO stlunch_suppliers (supplier_id,supplier_email,supplier_name,supplier_phone) VALUES (12,'ibrahimelhaj@hotmail.com','Bagels n'' Cream','43121448');
+INSERT INTO stlunch_suppliers (supplier_id,supplier_email,supplier_name,supplier_phone) VALUES (12,'ibrahimelhaj@hotmail.com','Bagels n'' Cream','60790280');
 
 INSERT INTO stlunch_users (user_id,user_email,user_name,administrator_yn,passwd_salt,passwd_enc,inactive_yn) VALUES (50,'helle.bohn@scott-tiger.dk','Helle Wittendorff Bohn','Y',null,'nisse',null);
 INSERT INTO stlunch_users (user_id,user_email,user_name,administrator_yn,passwd_salt,passwd_enc,inactive_yn) VALUES (51,'maria.kragh@scott-tiger.dk','Maria Kragh','Y',null,'nisse',null);

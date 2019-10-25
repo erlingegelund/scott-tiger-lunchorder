@@ -39,6 +39,7 @@ CREATE TABLE stlunch_suppliers (
 , supplier_email VARCHAR2(40 CHAR) NOT NULL
 , supplier_name VARCHAR2(40 CHAR) NOT NULL
 , supplier_phone VARCHAR2(40 CHAR)
+, order_memo VARCHAR2(255 CHAR)
 , CONSTRAINT stlunch_supplier_pk PRIMARY KEY (supplier_id)
 );
 
@@ -62,6 +63,7 @@ CREATE TABLE stlunch_menu_options (
 , multiple_yn CHAR(1) DEFAULT 'N' NOT NULL
 , additional_price NUMBER(6,2)
 , selectables VARCHAR2(4000 CHAR) NOT NULL
+, sort_order NUMBER(10)
 , CONSTRAINT stlunch_menu_option_pk PRIMARY KEY (menu_option_id)
 , CONSTRAINT stlunch_menu_option_fk FOREIGN KEY (supplier_menu_id) 
     REFERENCES stlunch_supplier_menus (supplier_menu_id) 
@@ -88,6 +90,7 @@ CREATE TABLE stlunch_order_options (
 , order_id NUMBER(10) NOT NULL
 , description VARCHAR(40 CHAR) NOT NULL
 , selected VARCHAR2(255 CHAR) NOT NULL
+, sort_order NUMBER(10)
 , CONSTRAINT stlunch_order_option_pk PRIMARY KEY (order_option_id)
 , CONSTRAINT stlunch_order_order_option_fk FOREIGN KEY (order_id) 
     REFERENCES stlunch_orders (order_id) 
