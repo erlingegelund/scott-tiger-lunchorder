@@ -127,7 +127,7 @@ CREATE OR REPLACE PACKAGE BODY stlunch_api AS
           , opt.selected AS "selected"
           FROM stlunch_order_options opt
           WHERE opt.order_id = ord.order_id
-          ORDER BY opt.description
+          ORDER BY opt.sort_order, opt.description
         ) AS "options"
       , stlunch_users.user_name AS "user_name"
       FROM stlunch_orders ord
