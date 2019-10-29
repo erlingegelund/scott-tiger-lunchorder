@@ -2,11 +2,11 @@
 const deadline = "10:00"
 const reopen = "12:00"
 
-const categoryURL = "/ords/st_lunch/stlunch_categories/";
-const supplierURL = "/ords/st_lunch/stlunch_suppliers/";
-const supplierMenuURL = "/ords/st_lunch/stlunch_supplier_menus/"
-const menuOptionsURL = "/ords/st_lunch/stlunch_menu_options/"
-const userHistoryURL = "/ords/st_lunch/get_user_order/on_date/";
+const categoryURL = "/ords/stlunch/api_categories/";
+const supplierURL = "/ords/stlunch/api_suppliers/";
+const supplierMenuURL = "/ords/stlunch/api_supplier_menus/"
+const menuOptionsURL = "/ords/stlunch/api_menu_options/"
+const userHistoryURL = "/ords/stlunch/api_get_user_order/on_date/";
 
 
 export const STLunchHelper = {

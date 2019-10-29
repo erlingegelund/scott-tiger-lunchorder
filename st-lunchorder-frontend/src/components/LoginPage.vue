@@ -44,7 +44,7 @@
 import Navigation from "./Navigation.vue";
 import Axios from "axios";
 
-const loginURL = "/ords/st_lunch/stlunch_login/user/";
+const loginURL = "/ords/stlunch/login/user/";
 
 export default {
   components: { Navigation },
@@ -77,8 +77,11 @@ export default {
 
       var router = this.$router;
       this.loading = true;
-      Axios.get(loginURL + username + "/" + password).then(response => {
-        var users = response.data.items;
+      let loginObj = {user_email: username, password: password};
+      Axios.post(loginURL, loginObj).then(response => {
+//      Axios.get(loginURL + username + "/" + password).then(response => {
+        var users = response.data.user;
+        console.log(JSON.stringify(users));
         if (users && users.length > 0) {
           var user = JSON.stringify(users[0]);
           sessionStorage.setItem("user", user);

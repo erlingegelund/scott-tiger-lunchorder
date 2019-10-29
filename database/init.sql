@@ -189,82 +189,82 @@ CREATE OR REPLACE VIEW stlunch_active_users AS
 DECLARE
   PRAGMA AUTONOMOUS_TRANSACTION;
 BEGIN
+    ORDS.DROP_REST_FOR_SCHEMA('ST_LUNCH');
+    COMMIT;
 
     ORDS.ENABLE_SCHEMA(p_enabled => TRUE,
                        p_schema => 'ST_LUNCH',
                        p_url_mapping_type => 'BASE_PATH',
-                       p_url_mapping_pattern => 'st_lunch',
+                       p_url_mapping_pattern => 'stlunch',
                        p_auto_rest_auth => FALSE);
-
-    commit;
 
     ORDS.ENABLE_OBJECT(p_enabled => TRUE,
                        p_schema => 'ST_LUNCH',
                        p_object => 'STLUNCH_CATEGORIES',
                        p_object_type => 'TABLE',
-                       p_object_alias => 'stlunch_categories',
-                       p_auto_rest_auth => FALSE);
+                       p_object_alias => 'categories',
+                       p_auto_rest_auth => TRUE);
 
     ORDS.ENABLE_OBJECT(p_enabled => TRUE,
                        p_schema => 'ST_LUNCH',
                        p_object => 'STLUNCH_USERS',
                        p_object_type => 'TABLE',
-                       p_object_alias => 'stlunch_users',
-                       p_auto_rest_auth => FALSE);
+                       p_object_alias => 'users',
+                       p_auto_rest_auth => TRUE);
 
     ORDS.ENABLE_OBJECT(p_enabled => TRUE,
                        p_schema => 'ST_LUNCH',
                        p_object => 'STLUNCH_SUPPLIERS',
                        p_object_type => 'TABLE',
-                       p_object_alias => 'stlunch_suppliers',
-                       p_auto_rest_auth => FALSE);
+                       p_object_alias => 'suppliers',
+                       p_auto_rest_auth => TRUE);
 
     ORDS.ENABLE_OBJECT(p_enabled => TRUE,
                        p_schema => 'ST_LUNCH',
                        p_object => 'STLUNCH_ACTIVE_USERS',
                        p_object_type => 'VIEW',
-                       p_object_alias => 'stlunch_active_users',
-                       p_auto_rest_auth => FALSE);
+                       p_object_alias => 'active_users',
+                       p_auto_rest_auth => TRUE);
 
     ORDS.ENABLE_OBJECT(p_enabled => TRUE,
                        p_schema => 'ST_LUNCH',
                        p_object => 'STLUNCH_SUPPLIER_MENUS',
                        p_object_type => 'TABLE',
-                       p_object_alias => 'stlunch_supplier_menus',
-                       p_auto_rest_auth => FALSE);
+                       p_object_alias => 'supplier_menus',
+                       p_auto_rest_auth => TRUE);
 
     ORDS.ENABLE_OBJECT(p_enabled => TRUE,
                        p_schema => 'ST_LUNCH',
                        p_object => 'STLUNCH_MENU_OPTIONS',
                        p_object_type => 'TABLE',
-                       p_object_alias => 'stlunch_menu_options',
-                       p_auto_rest_auth => FALSE);
+                       p_object_alias => 'menu_options',
+                       p_auto_rest_auth => TRUE);
 
     ORDS.ENABLE_OBJECT(p_enabled => TRUE,
                        p_schema => 'ST_LUNCH',
                        p_object => 'STLUNCH_ORDERS',
                        p_object_type => 'TABLE',
-                       p_object_alias => 'stlunch_orders',
-                       p_auto_rest_auth => FALSE);
+                       p_object_alias => 'orders',
+                       p_auto_rest_auth => TRUE);
 
-    ORDS.define_service(p_module_name    => 'stlunch_sup_supplier_menus',
-                        p_base_path      => 'stlunch_suppliers/',
-                        p_pattern        => 'stlunch_supplier_menus/:supp_id',
+    ORDS.define_service(p_module_name    => 'supplier_menus',
+                        p_base_path      => 'api/suppliers/',
+                        p_pattern        => 'menus/:supp_id',
                         p_method         => 'GET',
                         p_source_type    => ORDS.source_type_collection_feed,
                         p_source         => 'SELECT * FROM stlunch_supplier_menus WHERE supplier_id = :supp_id ORDER BY description',
                         p_items_per_page => 0);
 
-    ORDS.define_service(p_module_name    => 'stlunch_sup_menu_options',
-                        p_base_path      => 'stlunch_supplier_menus/',
-                        p_pattern        => 'stlunch_menu_options/:menu_id',
+    ORDS.define_service(p_module_name    => 'menu_options',
+                        p_base_path      => 'api/supplier_menus/',
+                        p_pattern        => 'options/:menu_id',
                         p_method         => 'GET',
                         p_source_type    => ORDS.source_type_collection_feed,
                         p_source         => 'SELECT * FROM stlunch_menu_options WHERE supplier_menu_id = :menu_id ORDER BY description',
                         p_items_per_page => 0);
                         
-    ORDS.define_service(p_module_name    => 'stlunch_orders_period',
-                        p_base_path      => 'orders_period/',
+    ORDS.define_service(p_module_name    => 'orders_period',
+                        p_base_path      => 'api/orders_period/',
                         p_pattern        => 'get/:p_d1/:p_d2',
                         p_method         => 'GET',
                         p_source_type    => ORDS.source_type_collection_feed,
@@ -279,7 +279,7 @@ AND o.order_date BETWEEN to_date(:p_d1,''YYYY-MM-DD'') AND to_date(:p_d2,''YYYY-
 GROUP BY u.user_id, u.user_name
 ORDER BY u.user_name',
                         p_items_per_page => 0);
-
+/*
     ORDS.define_service(p_module_name    => 'stlunch_login',
                         p_base_path      => 'stlunch_login/',
                         p_pattern        => 'user/:email/:passwd',
@@ -290,7 +290,7 @@ ORDER BY u.user_name',
                                              WHERE user_email = :email
                                              AND passwd_enc = :passwd',
                         p_items_per_page => 0);
-                        
-    commit;
+*/                        
+    COMMIT;
 
 END;

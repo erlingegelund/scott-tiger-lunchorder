@@ -143,9 +143,9 @@ import "vue-octicon/icons";
 import Navigation from "./Navigation.vue";
 import { STLunchHelper } from "../_helpers/stlunch";
 
-const supplierCategoriesURL = "/ords/st_lunch/suppliers_categories/prep_order/";
-const menusOptionsURL = "/ords/st_lunch/menus_options/prep_order/";
-const createOrderURL = "/ords/st_lunch/order/create/";
+const supplierCategoriesURL = "/ords/stlunch/api/suppliers_categories/prep_order/";
+const menusOptionsURL = "/ords/stlunch/api/menus_options/prep_order/";
+const createOrderURL = "/ords/stlunch/api/order/create/";
 
 export default {
   name: "Order",

@@ -10,8 +10,12 @@ CREATE OR REPLACE PACKAGE stlunch_api AS
     p_user_id stlunch_orders.user_id%TYPE
   , p_order_date VARCHAR2
   );
-  PROCEDURE create_order(
-    p_body IN blob
+  PROCEDURE create_order (
+    p_body IN BLOB
+  );
+  
+  PROCEDURE login (
+    p_body_text IN CLOB
   );
 END;
 /
@@ -178,7 +182,7 @@ CREATE OR REPLACE PACKAGE BODY stlunch_api AS
   END fetch_orders; 
   
   PROCEDURE create_order(
-    p_body IN blob
+    p_body IN BLOB
   ) IS
     TYPE t_order_tab IS TABLE OF stlunch_orders%ROWTYPE;
     TYPE t_option_tab IS TABLE OF stLunch_order_options%ROWTYPE;
@@ -289,13 +293,46 @@ CREATE OR REPLACE PACKAGE BODY stlunch_api AS
       HTP.print(SQLERRM);
   END create_order;
   
+  PROCEDURE login (
+    p_body_text IN CLOB
+  ) IS
+    l_body_text       CLOB := p_body_text;
+    l_user_obj        JSON_OBJECT_T;   
+    
+    l_user_email      stlunch_users.user_email%TYPE;
+    l_password        stlunch_users.passwd_enc%TYPE;
+    
+    l_user_cursor     SYS_REFCURSOR;
+    l_oauth_cursor    SYS_REFCURSOR;
+  BEGIN
+    l_user_obj := JSON_OBJECT_T(l_body_text);
+    l_user_email := l_user_obj.get_string('user_email');
+    l_password := l_user_obj.get_string('password');
+    
+    OPEN l_user_cursor FOR 
+    SELECT user_id AS "user_id", user_name AS "user_name", user_email AS "user_email", administrator_yn AS "administrator_yn"
+    FROM stlunch_active_users 
+    WHERE user_email = l_user_email
+    AND passwd_enc = l_password;
+    
+    OPEN l_oauth_cursor FOR
+    SELECT client_id AS "client_id", client_secret AS "client_secret"
+    FROM user_ords_clients
+    WHERE name = 'stlunch_client';
+    
+    apex_json.open_object;
+    apex_json.write('user', l_user_cursor);
+    apex_json.write('oauth',l_oauth_cursor);    
+    apex_json.close_object;
+    
+  END login;
 END stlunch_api;
 /
 
 BEGIN
   ORDS.define_module(
     p_module_name    => 'prep_order_supp_cat',
-    p_base_path      => 'suppliers_categories/',
+    p_base_path      => 'api/suppliers_categories/',
     p_items_per_page => 0);
   
   ORDS.define_template(
@@ -312,7 +349,7 @@ BEGIN
  
   ORDS.define_module(
     p_module_name    => 'prep_order_menu',
-    p_base_path      => 'menus_options/',
+    p_base_path      => 'api/menus_options/',
     p_items_per_page => 0);
   
   ORDS.define_template(
@@ -329,7 +366,7 @@ BEGIN
 
   ORDS.define_module(
     p_module_name    => 'create_order',
-    p_base_path      => 'order/',
+    p_base_path      => 'api/order/',
     p_items_per_page => 0);
   
   ORDS.define_template(
@@ -346,7 +383,7 @@ BEGIN
 
   ORDS.define_module(
     p_module_name    => 'get_user_order',
-    p_base_path      => 'get_user_order/',
+    p_base_path      => 'api/get_user_order/',
     p_items_per_page => 0);
   
   ORDS.define_template(
@@ -371,6 +408,23 @@ BEGIN
     p_method         => 'GET',
     p_source_type    => ORDS.source_type_plsql,
     p_source         => 'BEGIN stlunch_api.fetch_orders(p_user_id => null, p_order_date => :order_date); END;',
+    p_items_per_page => 0);
+
+  ORDS.define_module(
+    p_module_name    => 'login',
+    p_base_path      => 'login/',
+    p_items_per_page => 0);
+  
+  ORDS.define_template(
+   p_module_name    => 'login',
+   p_pattern        => 'user/');
+
+  ORDS.define_handler(
+    p_module_name    => 'login',
+    p_pattern        => 'user/',
+    p_method         => 'POST',
+    p_source_type    => ORDS.source_type_plsql,
+    p_source         => 'BEGIN stlunch_api.login(p_body_text => :body_text); END;',
     p_items_per_page => 0);
 
   COMMIT;
