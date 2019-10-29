@@ -29,19 +29,6 @@ BEGIN
   
   COMMIT;
   
-/*  
-  FOR i in l_role_arr.first..l_role_arr.last LOOP
-    OAUTH.revoke_client_role(
-      p_client_name => 'stlunch_client',
-      p_role_name   => l_role_arr(i)
-    );
-  END LOOP;
-  OAUTH.delete_client(
-    p_name => l_client_name
-  );
-  commit;
-*/
-  
   ORDS.define_privilege (
     p_privilege_name => l_privilege_name,
     p_roles          => l_role_arr,

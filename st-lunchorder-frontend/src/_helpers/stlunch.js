@@ -2,11 +2,14 @@
 const deadline = "10:00"
 const reopen = "12:00"
 
-const categoryURL = "/ords/stlunch/api_categories/";
-const supplierURL = "/ords/stlunch/api_suppliers/";
-const supplierMenuURL = "/ords/stlunch/api_supplier_menus/"
-const menuOptionsURL = "/ords/stlunch/api_menu_options/"
-const userHistoryURL = "/ords/stlunch/api_get_user_order/on_date/";
+const categoryURL = "/ords/stlunch/categories/";
+const supplierURL = "/ords/stlunch/suppliers/";
+const supplierMenuURL = "/ords/stlunch/supplier_menus/"
+const menuOptionsURL = "/ords/stlunch/menu_options/"
+const userHistoryURL = "/ords/stlunch/api/get_user_order/on_date/";
+
+const userStorage = "user";
+const tokenStorage = "access_token";
 
 
 export const STLunchHelper = {
@@ -16,11 +19,14 @@ export const STLunchHelper = {
     supplierMenuURL,
     menuOptionsURL,
     userHistoryURL,
+    userStorage,
+    tokenStorage,
     isBeforeDeadline,
     isAfterReopen,
     validateMail,
     dateToString,
-    prepOrdersForReport
+    prepOrdersForReport,
+    doLogin
 }
 
 function isBeforeDeadline(dateStr, timeInMillis) {
@@ -98,3 +104,5 @@ function prepOrdersForReport(orders) {
         // }
     }
 }
+
+function doLogin() {}
