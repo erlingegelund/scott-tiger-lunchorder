@@ -38,7 +38,10 @@ export const STLunchHelper = {
     doLogoff,
     prepOrderSuppliers,
     prepMenuOptions,
-    submitOrder
+    submitOrder,
+    submitCategory,
+    deleteCategory,
+    fetchCategories
 }
 
 function isBeforeDeadline(dateStr, timeInMillis) {
@@ -230,3 +233,46 @@ function submitOrder(order, router) {
         });
     });
 }
+
+function submitCategory(cat) {
+    if (cat.category_name) {
+        if (cat.category_id < 0) {
+            axios.post(categoryURL, cat).then(response => {
+                cat.category_id = response.data.category_id;
+            });
+        } else {
+            axios.put(categoryURL + cat.category_id, cat);
+        }
+        cat.edit = false;
+        cat.submitted = false;
+    } else {
+        cat.submitted = true;
+    }
+}
+
+function deleteCategory(cat, categoryComponent) {
+    axios.delete(categoryURL + cat.category_id).then(
+        response => {
+            var filtered = categoryComponent.categories.filter(
+                c => c.category_id != cat.category_id
+            );
+            categoryComponent.categories = filtered;
+        }
+    );
+}
+
+function fetchCategories(categoryComponent) {
+    axios.get(categoryURL).then(response => {
+        var categories = response.data.items;
+        for (let i in categories) {
+            categories[i].edit = false;
+            categories[i].submitted = false;
+        }
+        categories.sort((c1, c2) =>
+            c1.category_name > c2.category_name ? 1 : -1
+        );
+        categoryComponent.categories = categories;
+    });
+
+}
+
