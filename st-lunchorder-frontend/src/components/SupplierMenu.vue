@@ -194,9 +194,9 @@ import Octicon from "vue-octicon/components/Octicon.vue";
 import { STLunchHelper } from "../_helpers/stlunch";
 
 const supSupplierMenuURL =
-  "/ords/st_lunch/stlunch_suppliers/stlunch_supplier_menus/";
+  "/ords/stlunch/api/suppliers/menus/";
 const menuOptionsURL =
-  "/ords/st_lunch/stlunch_supplier_menus/stlunch_menu_options/";
+  "/ords/stlunch/api/supplier_menus/options/";
 
 export default {
   name: "Menu",

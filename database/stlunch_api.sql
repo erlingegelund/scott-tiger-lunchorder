@@ -207,6 +207,8 @@ CREATE OR REPLACE PACKAGE BODY stlunch_api AS
     
     l_option_id        stlunch_menu_options.menu_option_id%TYPE;
     l_selected         stlunch_order_options.selected%TYPE;
+    
+    l_body             BLOB := p_body;
   BEGIN 
     -- Hvis bestillingen er efter kl 12:00 er det til næste hverdag
     IF to_number(to_char(sysdate, 'HH24MM')) > 1200 THEN
@@ -220,7 +222,7 @@ CREATE OR REPLACE PACKAGE BODY stlunch_api AS
       -- TODO: Håndter helligdage
     END IF;
 
-    l_order_obj := JSON_OBJECT_T(p_body);
+    l_order_obj := JSON_OBJECT_T(l_body);
     l_user_id := l_order_obj.get_number('user_id');
     
     l_items_arr := l_order_obj.get_array('items');

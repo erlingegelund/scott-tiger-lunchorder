@@ -234,7 +234,7 @@ export default {
           }
         }
       }
-      STLunchHelper.submitOrder(this.$router);
+      STLunchHelper.submitOrder(this.order, this.$router);
     }
   },
   computed: {

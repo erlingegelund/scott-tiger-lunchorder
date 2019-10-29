@@ -222,8 +222,8 @@ function prepMenuOptions(orderComponent, supplierId, menuId) {
     );
 }
 
-function submitOrder(router) {
-    axios.post(createOrderURL, this.order).then(response => {
+function submitOrder(order, router) {
+    axios.post(createOrderURL, order).then(response => {
         router.push({
             name: "UserHistory",
             params: { orderItems: JSON.stringify(response.data) }

@@ -78,14 +78,14 @@ import Navigation from "./Navigation";
 import { STLunchHelper } from "../_helpers/stlunch";
 import Axios from "axios";
 
-const stlunchOrderURL = "/ords/st_lunch/stlunch_orders/";
+const stlunchOrderURL = "/ords/stlunch/orders/";
 
 export default {
   name: "user-history",
   components: { Navigation },
   data() {
     return {
-      userId: JSON.parse(sessionStorage.getItem("user")).user_id, // Læs bruger info fra sessionStorage
+      userId: JSON.parse(sessionStorage.getItem(STLunchHelper.userStorage)).user_id, // Læs bruger info fra sessionStorage
       orderdate: "",
       orderUpdated: false,
       now: Date.now(),
@@ -149,6 +149,7 @@ export default {
     let orderItemsJSON = this.$route.params.orderItems;
     if (orderItemsJSON) {
       this.orders = JSON.parse(orderItemsJSON).orders;
+      STLunchHelper.prepOrdersForReport(this.orders);
       if (this.orders.length > 0) {
         let orderMillis = Date.parse(this.orders[0].order_date);
         _orderDate.setTime(orderMillis);
