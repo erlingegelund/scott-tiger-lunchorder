@@ -1,6 +1,10 @@
+import Axios from "axios";
+
 // Deadline klokkeslet for bestilling af frokost - timetal med 2 cifre
 const deadline = "10:00"
 const reopen = "12:00"
+
+const loginURL = "/ords/stlunch/login/user/";
 
 const categoryURL = "/ords/stlunch/categories/";
 const supplierURL = "/ords/stlunch/suppliers/";
@@ -105,4 +109,34 @@ function prepOrdersForReport(orders) {
     }
 }
 
-function doLogin() {}
+function doLogin(loginComponent, username, password) {
+    let loginObj = { user_email: username, password: password };
+    Axios.post(loginURL, loginObj).then(response => {
+      var users = response.data.user;
+      if (users && users.length > 0) {
+        // Hent OAuth token
+        let oauth = response.data.oauth;
+        const basicAuth = "Basic " + btoa(oauth[0].client_id + ":" + oauth[0].client_secret);
+        const authURL = "/ords/stlunch/oauth/token";
+        const config = {
+          headers: {
+            Authorization: basicAuth,
+            "Content-Type": "application/x-www-form-urlencoded"
+          }
+        };
+        Axios.post(authURL, "grant_type=client_credentials", config).then(response => {
+          sessionStorage.setItem(STLunchHelper.tokenStorage, response.data.access_token);
+          var user = JSON.stringify(users[0]);
+          sessionStorage.setItem(STLunchHelper.userStorage, user);
+          loginComponent.$router.push(loginComponent.returnUrl);
+        },
+        error => {
+          console.log(error);
+
+        })
+      } else {
+        loginComponent.error = "Brugernavn eller kodeord er forkert";
+        loginComponent.loading = false;
+      }
+    });
+}

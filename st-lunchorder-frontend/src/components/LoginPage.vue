@@ -42,9 +42,7 @@
 </template>
 <script>
 import Navigation from "./Navigation.vue";
-import Axios from "axios";
-
-const loginURL = "/ords/stlunch/login/user/";
+import { STLunchHelper } from "../_helpers/stlunch";
 
 export default {
   components: { Navigation },
@@ -60,7 +58,8 @@ export default {
   },
   created() {
     // reset login status
-    sessionStorage.removeItem("user");
+    sessionStorage.removeItem(STLunchHelper.userStorage);
+    sessionStorage.removeItem(STLunchHelper.tokenStorage);
 
     // get return url from route parameters or default to '/'
     this.returnUrl = this.$route.query.returnUrl || "/";
@@ -75,41 +74,9 @@ export default {
         return;
       }
 
-      var router = this.$router;
       this.loading = true;
-      let loginObj = { user_email: username, password: password };
-      Axios.post(loginURL, loginObj).then(response => {
-        var users = response.data.user;
-        if (users && users.length > 0) {
-          // Hent OAuth token
-          //curl -i --user HvbYD_3cxzDojROh5SkNPQ..:LA39duWgf--s94lQEXsweg..
-          //  --data "grant_type=client_credentials" http://192.168.122.10:8080/ords/stlunch/oauth/token
-          // content-type application/x-www-form-urlencoded
-          let oauth = response.data.oauth;
-          const basicAuth = "Basic " + btoa(oauth[0].client_id + ":" + oauth[0].client_secret);
-          const authURL = "/ords/stlunch/oauth/token";
-          const config = {
-            headers: {
-              Authorization: basicAuth,
-              "Content-Type": "application/x-www-form-urlencoded"
-            }
-          };
-          Axios.post(authURL, "grant_type=client_credentials", config).then(response => {
-            console.log(response.data);
-            sessionStorage.setItem("access_token", response.data.access_token);
-            var user = JSON.stringify(users[0]);
-            sessionStorage.setItem("user", user);
-            router.push(this.returnUrl);
-          },
-          error => {
-            console.log(error);
 
-          })
-        } else {
-          this.error = "Brugernavn eller kodeord er forkert";
-          this.loading = false;
-        }
-      });
+      STLunchHelper.doLogin(this, username, password);
     }
   }
 };
