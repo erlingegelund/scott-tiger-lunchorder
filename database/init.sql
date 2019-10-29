@@ -1,6 +1,6 @@
 /*
 CREATE user st_lunch identified BY st_lunch;
-GRANT connect, resource TO st_lunch;
+GRANT connect, resource, create view TO st_lunch;
 ALTER USER st_lunch quota unlimited ON users;
 
 CONN st_lunch/st_lunch@//localhost:1539/xepdb1
@@ -294,3 +294,4 @@ ORDER BY u.user_name',
     commit;
 
 END;
+/
