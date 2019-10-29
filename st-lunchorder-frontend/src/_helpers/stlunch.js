@@ -1,4 +1,4 @@
-import Axios from "axios";
+import axios from "axios";
 
 // Deadline klokkeslet for bestilling af frokost - timetal med 2 cifre
 const deadline = "10:00"
@@ -11,6 +11,10 @@ const supplierURL = "/ords/stlunch/suppliers/";
 const supplierMenuURL = "/ords/stlunch/supplier_menus/"
 const menuOptionsURL = "/ords/stlunch/menu_options/"
 const userHistoryURL = "/ords/stlunch/api/get_user_order/on_date/";
+
+const supplierCategoriesURL = "/ords/stlunch/api/suppliers_categories/prep_order/";
+const menusOptionsURL = "/ords/stlunch/api/menus_options/prep_order/";
+const createOrderURL = "/ords/stlunch/api/order/create/";
 
 const userStorage = "user";
 const tokenStorage = "access_token";
@@ -30,7 +34,11 @@ export const STLunchHelper = {
     validateMail,
     dateToString,
     prepOrdersForReport,
-    doLogin
+    doLogin,
+    doLogoff,
+    prepOrderSuppliers,
+    prepMenuOptions,
+    submitOrder
 }
 
 function isBeforeDeadline(dateStr, timeInMillis) {
@@ -95,7 +103,7 @@ function dateToString(date) {
     let day = date.getDate()
     if (day < 10) ret += "0";
     ret += day.toString();
-    
+
     return ret;
 }
 
@@ -111,32 +119,114 @@ function prepOrdersForReport(orders) {
 
 function doLogin(loginComponent, username, password) {
     let loginObj = { user_email: username, password: password };
-    Axios.post(loginURL, loginObj).then(response => {
-      var users = response.data.user;
-      if (users && users.length > 0) {
-        // Hent OAuth token
-        let oauth = response.data.oauth;
-        const basicAuth = "Basic " + btoa(oauth[0].client_id + ":" + oauth[0].client_secret);
-        const authURL = "/ords/stlunch/oauth/token";
-        const config = {
-          headers: {
-            Authorization: basicAuth,
-            "Content-Type": "application/x-www-form-urlencoded"
-          }
-        };
-        Axios.post(authURL, "grant_type=client_credentials", config).then(response => {
-          sessionStorage.setItem(STLunchHelper.tokenStorage, response.data.access_token);
-          var user = JSON.stringify(users[0]);
-          sessionStorage.setItem(STLunchHelper.userStorage, user);
-          loginComponent.$router.push(loginComponent.returnUrl);
-        },
-        error => {
-          console.log(error);
+    axios.post(loginURL, loginObj).then(response => {
+        var users = response.data.user;
+        if (users && users.length > 0) {
+            // Hent OAuth token
+            let oauth = response.data.oauth;
+            const basicAuth = "Basic " + btoa(oauth[0].client_id + ":" + oauth[0].client_secret);
+            const authURL = "/ords/stlunch/oauth/token";
+            const config = {
+                headers: {
+                    Authorization: basicAuth,
+                    "Content-Type": "application/x-www-form-urlencoded"
+                }
+            };
+            axios.post(authURL, "grant_type=client_credentials", config).then(response => {
+                let token = response.data.access_token;
+                sessionStorage.setItem(STLunchHelper.tokenStorage, token);
+                axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+                var user = JSON.stringify(users[0]);
+                sessionStorage.setItem(STLunchHelper.userStorage, user);
+                loginComponent.$router.push(loginComponent.returnUrl);
+            },
+                error => {
+                    console.log(error);
 
-        })
-      } else {
-        loginComponent.error = "Brugernavn eller kodeord er forkert";
-        loginComponent.loading = false;
-      }
+                })
+        } else {
+            loginComponent.error = "Brugernavn eller kodeord er forkert";
+            loginComponent.loading = false;
+        }
+    });
+}
+
+function doLogoff() {
+    sessionStorage.removeItem(tokenStorage);
+    sessionStorage.removeItem(userStorage);
+    axios.defaults.headers.common["Authorization"] = null;
+}
+
+function prepareMenuItems(menuItems) {
+    for (var i in menuItems) {
+        if (menuItems[i].options) {
+            for (var n in menuItems[i].options) {
+                var _selections = [];
+                if (menuItems[i].options[n].selectables) {
+                    _selections = menuItems[i].options[n].selectables.split("\n");
+                }
+                menuItems[i].options[n].selections = _selections;
+                menuItems[i].options[n].value = [];
+            }
+        } else {
+            menuItems[i].options = [];
+        }
+        menuItems[i].items_ordered = 0;
+    }
+    return menuItems;
+}
+
+function prepOrderSuppliers(orderComponent) {
+    axios.get(supplierCategoriesURL + orderComponent.order.user_id.toString()).then(
+        response => {
+            var suppliersCategories = response.data.suppliers;
+            for (let i in suppliersCategories) {
+                for (let j in suppliersCategories[i].categories) {
+                    suppliersCategories[i].categories[j].menu_items = [];
+                    // Hent menu for brugerens sidst bestilte leverandør / kategori
+                    if (
+                        suppliersCategories[i].display === "Y" &&
+                        suppliersCategories[i].categories[j].display === "Y"
+                    ) {
+                        axios.get(
+                            menusOptionsURL +
+                            suppliersCategories[i].id +
+                            "/" +
+                            suppliersCategories[i].categories[j].id
+                        ).then(response => {
+                            suppliersCategories[i].categories[j].menu_items = prepareMenuItems(
+                                response.data.menu_items
+                            );
+                        });
+                    }
+                }
+            }
+            orderComponent.suppliers = suppliersCategories;
+        }
+    );
+}
+
+function prepMenuOptions(orderComponent, supplierId, menuId) {
+    axios.get(menusOptionsURL + supplierId + "/" + menuId).then(
+        response => {
+            let supplier = orderComponent.suppliers.filter(
+                s => s.id === supplierId
+            )[0];
+            let category = supplier.categories.filter(
+                c => c.id === menuId
+            )[0];
+            category.menu_items = prepareMenuItems(
+                response.data.menu_items
+            );
+        }
+    );
+}
+
+function submitOrder(router) {
+    axios.post(createOrderURL, this.order).then(response => {
+        router.push({
+            name: "UserHistory",
+            params: { orderItems: JSON.stringify(response.data) }
+        });
     });
 }

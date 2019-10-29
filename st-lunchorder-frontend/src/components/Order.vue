@@ -137,15 +137,10 @@
 </template>
 <script>
 import Multiselect from "vue-multiselect";
-import Axios from "axios";
 import Octicon from "vue-octicon/components/Octicon.vue";
 import "vue-octicon/icons";
 import Navigation from "./Navigation.vue";
 import { STLunchHelper } from "../_helpers/stlunch";
-
-const supplierCategoriesURL = "/ords/stlunch/api/suppliers_categories/prep_order/";
-const menusOptionsURL = "/ords/stlunch/api/menus_options/prep_order/";
-const createOrderURL = "/ords/stlunch/api/order/create/";
 
 export default {
   name: "Order",
@@ -158,21 +153,9 @@ export default {
         } else {
           obj.display = "Y";
           if (obj["category"] && obj["menu_items"].length == 0) {
-            let supplier_id = obj.supplier_id;
-            var self = this;
-            Axios.get(menusOptionsURL + supplier_id + "/" + obj.id).then(
-              response => {
-                let supplier = self.suppliers.filter(
-                  s => s.id === supplier_id
-                )[0];
-                let category = supplier.categories.filter(
-                  c => c.id === obj.id
-                )[0];
-                category.menu_items = self.prepareMenuItems(
-                  response.data.menu_items
-                );
-              }
-            );
+            //let supplier_id = obj.supplier_id;
+            //var self = this;
+            STLunchHelper.prepMenuOptions(this, obj.supplier_id, obj.id);
           }
         }
       }
@@ -251,31 +234,7 @@ export default {
           }
         }
       }
-      var _router = this.$router;
-      Axios.post(createOrderURL, this.order).then(response => {
-        _router.push({
-          name: "UserHistory",
-          params: { orderItems: JSON.stringify(response.data) }
-        });
-      });
-    },
-    prepareMenuItems(menuItems) {
-      for (var i in menuItems) {
-        if (menuItems[i].options) {
-          for (var n in menuItems[i].options) {
-            var _selections = [];
-            if (menuItems[i].options[n].selectables) {
-              _selections = menuItems[i].options[n].selectables.split("\n");
-            }
-            menuItems[i].options[n].selections = _selections;
-            menuItems[i].options[n].value = [];
-          }
-        } else {
-          menuItems[i].options = [];
-        }
-        menuItems[i].items_ordered = 0;
-      }
-      return menuItems;
+      STLunchHelper.submitOrder(this.$router);
     }
   },
   computed: {
@@ -306,33 +265,7 @@ export default {
       self.now = Date.now();
     }, 30000);
 
-    Axios.get(supplierCategoriesURL + this.order.user_id.toString()).then(
-      response => {
-        var suppliersCategories = response.data.suppliers;
-        for (let i in suppliersCategories) {
-          for (let j in suppliersCategories[i].categories) {
-            suppliersCategories[i].categories[j].menu_items = [];
-            // Hent menu for brugerens sidst bestilte leverandør / kategori
-            if (
-              suppliersCategories[i].display === "Y" &&
-              suppliersCategories[i].categories[j].display === "Y"
-            ) {
-              Axios.get(
-                menusOptionsURL +
-                  suppliersCategories[i].id +
-                  "/" +
-                  suppliersCategories[i].categories[j].id
-              ).then(response => {
-                suppliersCategories[i].categories[j].menu_items = self.prepareMenuItems(
-                  response.data.menu_items
-                );
-              });
-            }
-          }
-        }
-        this.suppliers = suppliersCategories;
-      }
-    );
+    STLunchHelper.prepOrderSuppliers(this);
   }
 };
 </script>

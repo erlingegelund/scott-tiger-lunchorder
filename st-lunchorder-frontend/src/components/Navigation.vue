@@ -44,6 +44,8 @@
 <script>
 import Octicon from "vue-octicon/components/Octicon.vue";
 import "vue-octicon/icons";
+import { STLunchHelper } from "../_helpers/stlunch";
+
 
 export default {
   name: "Navigation",
@@ -53,7 +55,7 @@ export default {
   props: ["showNavIcon"],
   methods: {
     logoff() {
-      sessionStorage.removeItem("user");
+      STLunchHelper.doLogoff();
       this.$router.push({ name: "Login" });
     },
     getUser() {
