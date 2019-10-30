@@ -431,9 +431,6 @@ CREATE OR REPLACE PACKAGE BODY stlunch_api AS
     l_old_stored          stlunch_users.passwd_enc%type;
 
   BEGIN
-    insert into ords_debug (data_clob) values (l_body_text);
-    commit;
-    
     l_user_obj := JSON_OBJECT_T(l_body_text);
     l_user_rec.user_id := l_user_obj.get_number('user_id');
     l_old_passwd := l_user_obj.get_string('old_password');
