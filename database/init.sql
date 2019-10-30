@@ -3,6 +3,8 @@ CREATE user st_lunch identified BY st_lunch;
 GRANT connect, resource TO st_lunch;
 ALTER USER st_lunch quota unlimited ON users;
 
+grant execute on sys.dbms_crypto to st_lunch;
+
 CONN st_lunch/st_lunch@//localhost:1539/xepdb1
 */
 
@@ -23,7 +25,7 @@ CREATE TABLE stlunch_users (
 , user_name VARCHAR2(40 CHAR) NOT NULL
 , administrator_yn CHAR(1) DEFAULT 'N' NOT NULL
 , passwd_salt VARCHAR2(10 CHAR) -- future use
-, passwd_enc VARCHAR2(40 CHAR)  -- future use
+, passwd_enc VARCHAR2(255 CHAR)  -- future use
 , inactive_yn CHAR(1)
 , CONSTRAINT stlunch_user_pk PRIMARY KEY (user_id)
 );
@@ -97,188 +99,5 @@ CREATE TABLE stlunch_order_options (
     ON DELETE CASCADE
 );
 
-CREATE OR REPLACE TRIGGER stlunch_user_bir 
-BEFORE INSERT 
-ON stlunch_users
-REFERENCING new AS new
-FOR EACH ROW
-BEGIN
-  IF :new.user_id IS NULL OR :new.user_id < 0 THEN
-    :new.user_id := stlunch_seq.nextval;
-  END IF;
-  :new.passwd_enc := 'nisse';
-END;
-/
-
-CREATE OR REPLACE TRIGGER stlunch_category_bir 
-BEFORE INSERT 
-ON stlunch_categories
-REFERENCING new AS new
-FOR EACH ROW
-BEGIN
-  IF :new.category_id IS NULL OR :new.category_id < 0 THEN
-    :new.category_id := stlunch_seq.nextval;
-  END IF;
-END;
-/
-
-CREATE OR REPLACE TRIGGER stlunch_supplier_bir 
-BEFORE INSERT 
-ON stlunch_suppliers
-REFERENCING new AS new
-FOR EACH ROW
-BEGIN
-  IF :new.supplier_id IS NULL OR :new.supplier_id < 0 THEN
-    :new.supplier_id := stlunch_seq.nextval;
-  END IF;
-END;
-/
-
-CREATE OR REPLACE TRIGGER stlunch_supplier_menu_bir 
-BEFORE INSERT 
-ON stlunch_supplier_menus
-REFERENCING new AS new
-FOR EACH ROW
-BEGIN
-  IF :new.supplier_menu_id IS NULL OR :new.supplier_menu_id < 0 THEN
-    :new.supplier_menu_id := stlunch_seq.nextval;
-  END IF;
-END;
-/
-
-CREATE OR REPLACE TRIGGER stlunch_menu_option_bir 
-BEFORE INSERT 
-ON stlunch_menu_options
-REFERENCING new AS new
-FOR EACH ROW
-BEGIN
-  IF :new.menu_option_id IS NULL OR :new.menu_option_id < 0 THEN
-    :new.menu_option_id := stlunch_seq.nextval;
-  END IF;
-END;
-/
-
-CREATE OR REPLACE TRIGGER stlunch_order_bir 
-BEFORE INSERT 
-ON stlunch_orders
-REFERENCING new AS new
-FOR EACH ROW
-BEGIN
-  IF :new.order_id IS NULL OR :new.order_id < 0 THEN
-    :new.order_id := stlunch_seq.nextval;
-  END IF;
-END;
-/
-
 CREATE OR REPLACE VIEW stlunch_active_users AS
   SELECT * FROM stlunch_users WHERE nvl(inactive_yn,'N') = 'N';
-  
--- Installer APEX 18.2
---   ADMIN e-mail: efe@scott-tiger.dk
---   Admin passwd: BremboM4;mono
---
--- alter profile default limit password_life_time unlimited;
--- alter user apex_public_user identified by BremboM4mono;
---
--- Installer ords-18.4.0 
--- https://docs.oracle.com/database/ords-18.1/AELIG/installing-REST-data-services.htm
---
--- Guide til installation
--- https://mikesmithers.wordpress.com/2019/03/01/installing-apex-and-ords-on-oracle-18cxe-on-centos/
-
-DECLARE
-  PRAGMA AUTONOMOUS_TRANSACTION;
-BEGIN
-    ORDS.DROP_REST_FOR_SCHEMA('ST_LUNCH');
-    COMMIT;
-
-    ORDS.ENABLE_SCHEMA(p_enabled => TRUE,
-                       p_schema => 'ST_LUNCH',
-                       p_url_mapping_type => 'BASE_PATH',
-                       p_url_mapping_pattern => 'stlunch',
-                       p_auto_rest_auth => FALSE);
-
-    ORDS.ENABLE_OBJECT(p_enabled => TRUE,
-                       p_schema => 'ST_LUNCH',
-                       p_object => 'STLUNCH_CATEGORIES',
-                       p_object_type => 'TABLE',
-                       p_object_alias => 'categories',
-                       p_auto_rest_auth => TRUE);
-
-    ORDS.ENABLE_OBJECT(p_enabled => TRUE,
-                       p_schema => 'ST_LUNCH',
-                       p_object => 'STLUNCH_USERS',
-                       p_object_type => 'TABLE',
-                       p_object_alias => 'users',
-                       p_auto_rest_auth => TRUE);
-
-    ORDS.ENABLE_OBJECT(p_enabled => TRUE,
-                       p_schema => 'ST_LUNCH',
-                       p_object => 'STLUNCH_SUPPLIERS',
-                       p_object_type => 'TABLE',
-                       p_object_alias => 'suppliers',
-                       p_auto_rest_auth => TRUE);
-
-    ORDS.ENABLE_OBJECT(p_enabled => TRUE,
-                       p_schema => 'ST_LUNCH',
-                       p_object => 'STLUNCH_ACTIVE_USERS',
-                       p_object_type => 'VIEW',
-                       p_object_alias => 'active_users',
-                       p_auto_rest_auth => TRUE);
-
-    ORDS.ENABLE_OBJECT(p_enabled => TRUE,
-                       p_schema => 'ST_LUNCH',
-                       p_object => 'STLUNCH_SUPPLIER_MENUS',
-                       p_object_type => 'TABLE',
-                       p_object_alias => 'supplier_menus',
-                       p_auto_rest_auth => TRUE);
-
-    ORDS.ENABLE_OBJECT(p_enabled => TRUE,
-                       p_schema => 'ST_LUNCH',
-                       p_object => 'STLUNCH_MENU_OPTIONS',
-                       p_object_type => 'TABLE',
-                       p_object_alias => 'menu_options',
-                       p_auto_rest_auth => TRUE);
-
-    ORDS.ENABLE_OBJECT(p_enabled => TRUE,
-                       p_schema => 'ST_LUNCH',
-                       p_object => 'STLUNCH_ORDERS',
-                       p_object_type => 'TABLE',
-                       p_object_alias => 'orders',
-                       p_auto_rest_auth => TRUE);
-
-    ORDS.define_service(p_module_name    => 'supplier_menus',
-                        p_base_path      => 'api/suppliers/',
-                        p_pattern        => 'menus/:supp_id',
-                        p_method         => 'GET',
-                        p_source_type    => ORDS.source_type_collection_feed,
-                        p_source         => 'SELECT * FROM stlunch_supplier_menus WHERE supplier_id = :supp_id ORDER BY description',
-                        p_items_per_page => 0);
-
-    ORDS.define_service(p_module_name    => 'menu_options',
-                        p_base_path      => 'api/supplier_menus/',
-                        p_pattern        => 'options/:menu_id',
-                        p_method         => 'GET',
-                        p_source_type    => ORDS.source_type_collection_feed,
-                        p_source         => 'SELECT * FROM stlunch_menu_options WHERE supplier_menu_id = :menu_id ORDER BY description',
-                        p_items_per_page => 0);
-                        
-    ORDS.define_service(p_module_name    => 'orders_period',
-                        p_base_path      => 'api/orders_period/',
-                        p_pattern        => 'get/:p_d1/:p_d2',
-                        p_method         => 'GET',
-                        p_source_type    => ORDS.source_type_collection_feed,
-                        p_source         =>
-'SELECT u.user_id AS "user_id"
-, u.user_name AS "user_name"
-, COUNT(DISTINCT o.order_date) AS "number_days"
-, SUM(o.items_ordered * o.price) AS "price_total"
-FROM stlunch_users u, stlunch_orders o
-WHERE u.user_id = o.user_id
-AND o.order_date BETWEEN to_date(:p_d1,''YYYY-MM-DD'') AND to_date(:p_d2,''YYYY-MM-DD'')
-GROUP BY u.user_id, u.user_name
-ORDER BY u.user_name',
-                        p_items_per_page => 0);
-    COMMIT;
-
-END;
