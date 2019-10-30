@@ -15,6 +15,13 @@
           <b-form-input type="date" v-model="orderdate" @update="orderDateChange()" />
         </div>
       </div>
+      <div class="row pt-2" v-show="orders.length > 0 && orders[0].user_id != userId">
+        <div class="col">
+          <b-alert variant="primary" show>
+            Bestilling oprettet for: {{userName}}
+          </b-alert>
+        </div>
+      </div>
       <div class="row" style="margin-top: 20px;">
         <div class="col">
           <div class="container-fluid">
@@ -91,7 +98,8 @@ export default {
       orderdate: "",
       orderUpdated: false,
       now: Date.now(),
-      orders: []
+      orders: [],
+      userName: ""
     };
   },
   methods: {
@@ -155,6 +163,16 @@ export default {
       if (this.orders.length > 0) {
         let orderMillis = Date.parse(this.orders[0].order_date);
         _orderDate.setTime(orderMillis);
+
+        // Hent brugernavn bestilling er oprettet for
+        if(this.orders[0].user_id != this.userId) {
+          axios.get("/ords/stlunch/users/"+this.orders[0].user_id).then(
+            response => {
+              console.log(response.data);
+              this.userName = response.data.user_name;
+            }
+          )
+        }
       }
       this.orderdate = STLunchHelper.dateToString(_orderDate);
     } else {

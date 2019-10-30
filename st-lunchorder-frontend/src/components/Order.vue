@@ -21,6 +21,20 @@
           >Det er kun muligt at bestille indtil kl {{deadlineFormatted}}</div>
         </div>
       </div>
+      <div class="row" v-show="isAdministrator()">
+        <div class="col">
+          <b-alert variant="primary" show>
+          <b-form-group class="mb-0"
+            label="Opret bestilling for"
+            label-for="order-for-user"
+            label-cols="2"
+            label-class="font-weight-bold"
+          >
+            <b-form-select v-model="order.user_id" :options="userList"></b-form-select>
+          </b-form-group>
+          </b-alert>
+        </div>
+      </div>
       <div v-for="sup in suppliers" :key="sup.id" class="row">
         <div class="col">
           <div @click="toggleChildren(sup)" class="row-supplier">
@@ -220,7 +234,7 @@ export default {
                     option_id: orderedMenu.options[n].id,
                     selected: []
                   };
-                  if(typeof orderedMenu.options[n].value == "string") {
+                  if (typeof orderedMenu.options[n].value == "string") {
                     option.selected[0] = orderedMenu.options[n].value;
                   } else {
                     option.selected = orderedMenu.options[n].value;
@@ -235,6 +249,9 @@ export default {
         }
       }
       STLunchHelper.submitOrder(this.order, this.$router);
+    },
+    isAdministrator() {
+      return STLunchHelper.isAdministrator();
     }
   },
   computed: {
@@ -255,7 +272,8 @@ export default {
         user_id: JSON.parse(sessionStorage.getItem("user")).user_id, // Læs bruger info fra sessionStorage
         items: []
       },
-      suppliers: []
+      suppliers: [],
+      userList: []
     };
   },
   created: function() {

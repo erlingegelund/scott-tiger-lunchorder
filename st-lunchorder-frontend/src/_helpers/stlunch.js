@@ -11,6 +11,7 @@ const categoryURL = "/ords/stlunch/categories/";
 const supplierURL = "/ords/stlunch/suppliers/";
 const supplierMenuURL = "/ords/stlunch/supplier_menus/"
 const menuOptionsURL = "/ords/stlunch/menu_options/"
+const activeUserURL = "/ords/stlunch/active_users/";
 
 const changePasswordURL = "/ords/stlunch/api/change-password/";
 const prepOrderURL = "/ords/stlunch/api/prep-order/";
@@ -42,7 +43,8 @@ export const STLunchHelper = {
     submitOrder,
     submitCategory,
     deleteCategory,
-    fetchCategories
+    fetchCategories,
+    isAdministrator
 }
 
 function isBeforeDeadline(dateStr, timeInMillis) {
@@ -236,6 +238,19 @@ function prepOrderSuppliers(orderComponent) {
         let token = sessionStorage.getItem(STLunchHelper.tokenStorage);
         axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     }
+    if (isAdministrator()) {
+        axios.get(activeUserURL).then(
+            response => {
+                let userJSON = JSON.stringify(response.data.items);
+                userJSON = userJSON.replace(
+                    /\"user_id\":/g,
+                    '"value":'
+                );
+                userJSON = userJSON.replace(/\"user_name\":/g, '"text":');
+                orderComponent.userList = JSON.parse(userJSON).sort((u1, u2) => u1.text > u2.text ? 1 : -1);
+            }
+        )
+    }
     axios.get(prepOrderURL + orderComponent.order.user_id.toString()).then(
         response => {
             var suppliersCategories = response.data.suppliers;
@@ -332,3 +347,12 @@ function fetchCategories(categoryComponent) {
 
 }
 
+function isAdministrator() {
+    // Læs bruger info fra sessionStorage
+    let user = JSON.parse(sessionStorage.getItem("user"));
+    if (user) {
+        return user.administrator_yn === "Y";
+    } else {
+        return false;
+    }
+}

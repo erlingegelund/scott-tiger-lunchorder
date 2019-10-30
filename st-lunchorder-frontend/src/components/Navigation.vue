@@ -70,12 +70,7 @@ export default {
     },
     isAdministrator() {
       // Læs bruger info fra sessionStorage
-      let user = JSON.parse(sessionStorage.getItem("user"));
-      if (user) {
-        return user.administrator_yn === "Y";
-      } else {
-        return false;
-      }
+      return STLunchHelper.isAdministrator();
     }
   },
   computed: {
