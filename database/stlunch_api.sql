@@ -25,7 +25,11 @@ CREATE OR REPLACE PACKAGE stlunch_api AS
   );
   
   PROCEDURE email_new_password (
-    p_email            IN stlunch_users.user_email%TYPE
+    p_body_text        IN CLOB
+  );
+
+  PROCEDURE change_password(
+    p_body_text        IN CLOB
   );
 END;
 /
@@ -384,15 +388,22 @@ CREATE OR REPLACE PACKAGE BODY stlunch_api AS
   END encrypt_password;
 
   PROCEDURE email_new_password (
-    p_email            IN stlunch_users.user_email%TYPE
+    p_body_text        IN CLOB
   ) IS
+    l_body_text           CLOB := p_body_text;
+    l_user_obj            JSON_OBJECT_T;   
+
+    l_user_email          stlunch_users.user_email%TYPE;
     l_user_rec            stlunch_users%ROWTYPE;
     l_new_passwd          stlunch_users.passwd_enc%type;
   BEGIN
+    l_user_obj := JSON_OBJECT_T(l_body_text);
+    l_user_email := l_user_obj.get_string('user_email');
+
     SELECT *
     INTO l_user_rec
     FROM stlunch_active_users
-    WHERE user_email = p_email;
+    WHERE user_email = l_user_email;
     
     l_new_passwd := DBMS_RANDOM.string('a',12);
     l_user_rec.passwd_enc := l_new_passwd;
@@ -405,7 +416,45 @@ CREATE OR REPLACE PACKAGE BODY stlunch_api AS
     
     stlunch_mails.send_new_password(l_user_rec.user_email, l_new_passwd);
   END email_new_password;
+  
+  PROCEDURE change_password(
+    p_body_text        IN CLOB
+  ) IS
+    l_body_text           CLOB := p_body_text;
+    l_user_obj            JSON_OBJECT_T;   
 
+    l_user_rec            stlunch_users%ROWTYPE;
+
+    l_old_passwd          stlunch_users.passwd_enc%type;
+    l_new_passwd          stlunch_users.passwd_enc%type;
+
+    l_old_stored          stlunch_users.passwd_enc%type;
+
+  BEGIN
+    l_user_obj := JSON_OBJECT_T(l_body_text);
+    l_user_rec.user_id := l_user_obj.get_number('user_id');
+    l_old_passwd := l_user_obj.get_string('old_password');
+    l_new_passwd := l_user_obj.get_string('new_password');
+
+    SELECT *
+    INTO l_user_rec
+    FROM stlunch_active_users
+    WHERE user_id = l_user_rec.user_id;
+    
+    l_old_stored := l_user_rec.passwd_enc;
+    
+    get_encrypted_password(l_user_rec, l_old_passwd);
+    
+    IF l_old_stored != l_user_rec.passwd_enc THEN
+      raise_application_error(-21001, 'Gammelt kodeord ikke genkendt');
+    END IF;
+    l_user_rec.passwd_enc := l_new_passwd;
+    encrypt_password(l_user_rec.user_email, l_user_rec.passwd_enc, l_user_rec.passwd_salt);
+    
+    UPDATE stlunch_users 
+    SET passwd_enc = l_user_rec.passwd_enc, passwd_salt = l_user_rec.passwd_salt
+    WHERE user_id = l_user_rec.user_id;
+  END change_password;
 END stlunch_api;
 /
 

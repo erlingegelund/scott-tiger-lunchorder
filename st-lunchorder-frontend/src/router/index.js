@@ -2,6 +2,7 @@ import Vue from 'vue'
 import VueRouter from "vue-router"
 import Order from '@/components/Order'
 import LoginPage from '@/components/LoginPage'
+import ForgotPassword from '@/components/ForgotPassword'
 import UserHistory from '@/components/UserHistory'
 import OrderHistory from '@/components/OrderHistory'
 import MonthlyReport from '@/components/MonthlyReport'
@@ -16,6 +17,7 @@ export const router = new VueRouter({
     mode: 'history',
     routes: [
         { path: '/login', name: "Login", component: LoginPage, props: true},
+        { path: '/forgot', name: "Forgot", component: ForgotPassword, props: true},
         { path: '/', name: "Order", component: Order, props: true},
         { path: '/userhistory', name: "UserHistory", component: UserHistory, props: true},
         { path: '/orderhistory', name: "OrderHistory", component: OrderHistory, props: true},
@@ -30,7 +32,7 @@ export const router = new VueRouter({
 
 router.beforeEach((to, from, next) => {
     // redirect to login page if not logged in and trying to access a restricted page
-    const publicPages = ['/login'];
+    const publicPages = ['/login','/forgot'];
     const authRequired = !publicPages.includes(to.path);
     const loggedIn = sessionStorage.getItem('user');
 

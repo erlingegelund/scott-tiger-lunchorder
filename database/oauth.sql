@@ -1,4 +1,5 @@
---https://oracle-base.com/articles/misc/oracle-rest-data-services-ords-authentication#first-party-authentication
+-- https://oracle-base.com/articles/misc/oracle-rest-data-services-ords-authentication#first-party-authentication
+-- Mere info: https://aaronparecki.com/oauth-2-simplified/
 DECLARE
   l_role_arr OWA.vc_arr;
   l_pattern_arr OWA.vc_arr;

@@ -5,6 +5,7 @@ const deadline = "10:00"
 const reopen = "12:00"
 
 const loginURL = "/ords/stlunch/login/user/";
+const forgotURL = "/ords/stlunch/login/forgot/";
 
 const categoryURL = "/ords/stlunch/categories/";
 const supplierURL = "/ords/stlunch/suppliers/";
@@ -36,6 +37,7 @@ export const STLunchHelper = {
     prepOrdersForReport,
     doLogin,
     doLogoff,
+    emailNewPassword,
     prepOrderSuppliers,
     prepMenuOptions,
     submitOrder,
@@ -181,6 +183,16 @@ function doLogoff() {
     sessionStorage.removeItem(tokenStorage);
     sessionStorage.removeItem(userStorage);
     axios.defaults.headers.common["Authorization"] = null;
+}
+
+function emailNewPassword(forgotComponent) {
+    let forgotObj = { user_email: forgotComponent.username };
+    axios.post(forgotURL, forgotObj).then(response => {
+        forgotComponent.$router.push('{name: "Login"}');
+    },
+    error => {
+        forgotComponent.error = error;
+    });
 }
 
 function prepareMenuItems(menuItems) {

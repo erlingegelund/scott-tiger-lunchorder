@@ -203,6 +203,18 @@ ORDER BY u.user_name',
     p_source         => 'BEGIN stlunch_api.login(p_body_text => :body_text); END;',
     p_items_per_page => 0);
 
+  ORDS.define_template(
+   p_module_name    => 'login',
+   p_pattern        => 'forgot/');
+
+  ORDS.define_handler(
+    p_module_name    => 'login',
+    p_pattern        => 'forgot/',
+    p_method         => 'POST',
+    p_source_type    => ORDS.source_type_plsql,
+    p_source         => 'BEGIN stlunch_api.email_new_password(p_body_text => :body_text); END;',
+    p_items_per_page => 0);
+
   COMMIT;
 END;
 /
