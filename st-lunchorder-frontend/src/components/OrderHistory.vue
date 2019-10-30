@@ -60,7 +60,9 @@
 <script>
 import Navigation from "./Navigation";
 import { STLunchHelper } from "../_helpers/stlunch";
-import Axios from "axios";
+import axios from "axios";
+
+const orderHistoryURL = "/ords/stlunch/api/get-orders/";
 
 export default {
   components: { Navigation },
@@ -72,7 +74,7 @@ export default {
   },
   methods: {
     orderDateChange() {
-      Axios.get(STLunchHelper.userHistoryURL + this.orderdate).then(
+      axios.get(orderHistoryURL + this.orderdate).then(
         response => {
           this.orders = response.data.orders;
           STLunchHelper.prepOrdersForReport(this.orders);

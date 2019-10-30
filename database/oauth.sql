@@ -16,14 +16,10 @@ BEGIN
   l_role_arr(7) := 'oracle.dbtools.role.autorest.ST_LUNCH.STLUNCH_ORDERS';
   l_role_arr(8) := 'oracle.dbtools.role.autorest.ST_LUNCH.STLUNCH_ACTIVE_USERS';
   --l_pattern_arr(1) := '/stlunch/api/*';
-  l_module_arr(1) := 'create_order';
-  l_module_arr(2) := 'get_user_order';
-  l_module_arr(3) := 'menu_options';
-  l_module_arr(4) := 'orders_period';
-  l_module_arr(5) := 'prep_order_menu';
-  l_module_arr(6) := 'prep_order_supp_cat';
-  l_module_arr(7) := 'supplier_menus';
-  
+  l_module_arr(1) := 'api';
+  l_module_arr(2) := 'service-menu-options';
+  l_module_arr(3) := 'service-orders';
+  l_module_arr(4) := 'service-supplier-menus';
   
   ORDS.create_role(
     p_role_name => l_role_arr(1)

@@ -76,9 +76,11 @@
 <script>
 import Navigation from "./Navigation";
 import { STLunchHelper } from "../_helpers/stlunch";
-import Axios from "axios";
+import axios from "axios";
 
 const stlunchOrderURL = "/ords/stlunch/orders/";
+const userHistoryURL = "/ords/stlunch/api/get-user-orders/";
+
 
 export default {
   name: "user-history",
@@ -106,8 +108,8 @@ export default {
       }
     },
     orderDateChange() {      
-      Axios.get(
-        STLunchHelper.userHistoryURL + this.userId + "/" + this.orderdate
+      axios.get(
+        userHistoryURL + this.userId + "/" + this.orderdate
       ).then(response => {
         this.orders = response.data.orders;
         STLunchHelper.prepOrdersForReport(this.orders);
@@ -118,13 +120,13 @@ export default {
       if (this.orderUpdated) {
         for (let i in this.orders) {
           if (this.orders[i].items_ordered == 0) {
-            Axios.delete(stlunchOrderURL + this.orders[i].order_id);
+            axios.delete(stlunchOrderURL + this.orders[i].order_id);
             let filtered = this.orders.filter(
               o => o.order_id != this.orders[i].order_id
             );
             this.orders = filtered;
           } else {
-            Axios.put(
+            axios.put(
               stlunchOrderURL + this.orders[i].order_id,
               this.orders[i]
             );

@@ -6,18 +6,15 @@ const reopen = "12:00"
 
 const loginURL = "/ords/stlunch/login/user/";
 const resetPasswordURL = "/ords/stlunch/login/reset/";
-const changePasswordURL = "/ords/stlunch/api/order/change-password/";
-
 
 const categoryURL = "/ords/stlunch/categories/";
 const supplierURL = "/ords/stlunch/suppliers/";
 const supplierMenuURL = "/ords/stlunch/supplier_menus/"
 const menuOptionsURL = "/ords/stlunch/menu_options/"
-const userHistoryURL = "/ords/stlunch/api/get_user_order/on_date/";
 
-const supplierCategoriesURL = "/ords/stlunch/api/suppliers_categories/prep_order/";
-const menusOptionsURL = "/ords/stlunch/api/menus_options/prep_order/";
-const createOrderURL = "/ords/stlunch/api/order/create/";
+const changePasswordURL = "/ords/stlunch/api/change-password/";
+const prepOrderURL = "/ords/stlunch/api/prep-order/";
+const createOrderURL = "/ords/stlunch/api/create-order/";
 
 const userStorage = "user";
 const tokenStorage = "access_token";
@@ -29,7 +26,6 @@ export const STLunchHelper = {
     supplierURL,
     supplierMenuURL,
     menuOptionsURL,
-    userHistoryURL,
     userStorage,
     tokenStorage,
     isBeforeDeadline,
@@ -240,7 +236,7 @@ function prepOrderSuppliers(orderComponent) {
         let token = sessionStorage.getItem(STLunchHelper.tokenStorage);
         axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     }
-    axios.get(supplierCategoriesURL + orderComponent.order.user_id.toString()).then(
+    axios.get(prepOrderURL + orderComponent.order.user_id.toString()).then(
         response => {
             var suppliersCategories = response.data.suppliers;
             for (let i in suppliersCategories) {
@@ -252,7 +248,7 @@ function prepOrderSuppliers(orderComponent) {
                         suppliersCategories[i].categories[j].display === "Y"
                     ) {
                         axios.get(
-                            menusOptionsURL +
+                            prepOrderURL +
                             suppliersCategories[i].id +
                             "/" +
                             suppliersCategories[i].categories[j].id
@@ -270,7 +266,7 @@ function prepOrderSuppliers(orderComponent) {
 }
 
 function prepMenuOptions(orderComponent, supplierId, menuId) {
-    axios.get(menusOptionsURL + supplierId + "/" + menuId).then(
+    axios.get(prepOrderURL + supplierId + "/" + menuId).then(
         response => {
             let supplier = orderComponent.suppliers.filter(
                 s => s.id === supplierId

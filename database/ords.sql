@@ -72,25 +72,37 @@ BEGIN
                        p_object_alias => 'orders',
                        p_auto_rest_auth => TRUE);
 
-    ORDS.define_service(p_module_name    => 'supplier_menus',
-                        p_base_path      => 'api/suppliers/',
+    ORDS.define_service(p_module_name    => 'service-supplier-menus',
+                        p_base_path      => 'service-supplier/',
                         p_pattern        => 'menus/:supp_id',
                         p_method         => 'GET',
                         p_source_type    => ORDS.source_type_collection_feed,
-                        p_source         => 'SELECT * FROM stlunch_supplier_menus WHERE supplier_id = :supp_id ORDER BY description',
+                        p_source         => 
+'SELECT sm.supplier_menu_id AS "supplier_menu_id"
+, sm.supplier_id AS "supplier_id"
+, sm.category_id AS "category_id"
+, sm.menu_name AS "menu_name"
+, sm.description AS "description"
+, sm.price AS "price"
+, cat.category_name AS "category_name"
+FROM stlunch_supplier_menus sm
+, stlunch_categories cat
+WHERE sm.category_id = cat.category_id
+AND sm.supplier_id = :supp_id 
+ORDER BY cat.category_name, sm.menu_name, sm.price',
                         p_items_per_page => 0);
 
-    ORDS.define_service(p_module_name    => 'menu_options',
-                        p_base_path      => 'api/supplier_menus/',
+    ORDS.define_service(p_module_name    => 'service-menu-options',
+                        p_base_path      => 'service-menu/',
                         p_pattern        => 'options/:menu_id',
                         p_method         => 'GET',
                         p_source_type    => ORDS.source_type_collection_feed,
-                        p_source         => 'SELECT * FROM stlunch_menu_options WHERE supplier_menu_id = :menu_id ORDER BY description',
+                        p_source         => 'SELECT * FROM stlunch_menu_options WHERE supplier_menu_id = :menu_id ORDER BY sort_order, description',
                         p_items_per_page => 0);
                         
-    ORDS.define_service(p_module_name    => 'orders_period',
-                        p_base_path      => 'api/orders_period/',
-                        p_pattern        => 'get/:p_d1/:p_d2',
+    ORDS.define_service(p_module_name    => 'service-orders',
+                        p_base_path      => 'service-orders/',
+                        p_pattern        => 'period/:p_d1/:p_d2',
                         p_method         => 'GET',
                         p_source_type    => ORDS.source_type_collection_feed,
                         p_source         =>
@@ -107,80 +119,65 @@ ORDER BY u.user_name',
     COMMIT;
 
   ORDS.define_module(
-    p_module_name    => 'prep_order_supp_cat',
-    p_base_path      => 'api/suppliers_categories/',
+    p_module_name    => 'api',
+    p_base_path      => 'api/',
     p_items_per_page => 0);
   
   ORDS.define_template(
-   p_module_name    => 'prep_order_supp_cat',
-   p_pattern        => 'prep_order/:user_id');
+   p_module_name    => 'api',
+   p_pattern        => 'prep-order/:user_id');
 
   ORDS.define_handler(
-    p_module_name    => 'prep_order_supp_cat',
-    p_pattern        => 'prep_order/:user_id',
+    p_module_name    => 'api',
+    p_pattern        => 'prep-order/:user_id',
     p_method         => 'GET',
     p_source_type    => ORDS.source_type_plsql,
     p_source         => 'BEGIN stlunch_api.fetch_supplier_categories(:user_id); END;',
     p_items_per_page => 0);
  
-  ORDS.define_module(
-    p_module_name    => 'prep_order_menu',
-    p_base_path      => 'api/menus_options/',
-    p_items_per_page => 0);
-  
   ORDS.define_template(
-   p_module_name    => 'prep_order_menu',
-   p_pattern        => 'prep_order/:supplier_id/:category_id');
+   p_module_name    => 'api',
+   p_pattern        => 'prep-order/:supplier_id/:category_id');
 
   ORDS.define_handler(
-    p_module_name    => 'prep_order_menu',
-    p_pattern        => 'prep_order/:supplier_id/:category_id',
+    p_module_name    => 'api',
+    p_pattern        => 'prep-order/:supplier_id/:category_id',
     p_method         => 'GET',
     p_source_type    => ORDS.source_type_plsql,
     p_source         => 'BEGIN stlunch_api.fetch_supplier_cat_menus(:supplier_id, :category_id); END;',
     p_items_per_page => 0);
 
-  ORDS.define_module(
-    p_module_name    => 'create_order',
-    p_base_path      => 'api/order/',
-    p_items_per_page => 0);
-  
   ORDS.define_template(
-   p_module_name    => 'create_order',
-   p_pattern        => 'create/');
+   p_module_name    => 'api',
+   p_pattern        => 'create-order/');
 
   ORDS.define_handler(
-    p_module_name    => 'create_order',
-    p_pattern        => 'create/',
+    p_module_name    => 'api',
+    p_pattern        => 'create-order/',
     p_method         => 'POST',
     p_source_type    => ORDS.source_type_plsql,
     p_source         => 'BEGIN stlunch_api.create_order(p_body => :body); END;',
     p_items_per_page => 0);
 
-  ORDS.define_module(
-    p_module_name    => 'get_user_order',
-    p_base_path      => 'api/get_user_order/',
-    p_items_per_page => 0);
-  
   ORDS.define_template(
-   p_module_name    => 'get_user_order',
-   p_pattern        => 'on_date/:user_id/:order_date');
+   p_module_name    => 'api',
+   p_pattern        => 'get-user-orders/:user_id/:order_date');
 
   ORDS.define_handler(
-    p_module_name    => 'get_user_order',
-    p_pattern        => 'on_date/:user_id/:order_date',
+    p_module_name    => 'api',
+    p_pattern        => 'get-user-orders/:user_id/:order_date',
     p_method         => 'GET',
     p_source_type    => ORDS.source_type_plsql,
     p_source         => 'BEGIN stlunch_api.fetch_orders(p_user_id => :user_id, p_order_date => :order_date); END;',
     p_items_per_page => 0);
 
   ORDS.define_template(
-   p_module_name    => 'get_user_order',
-   p_pattern        => 'on_date/:order_date');
+   p_module_name    => 'api',
+   p_pattern        => 'get-orders/:order_date');
 
   ORDS.define_handler(
-    p_module_name    => 'get_user_order',
-    p_pattern        => 'on_date/:order_date',
+    p_module_name    => 'api',
+    p_pattern        => 'get-orders/:order_date',
     p_method         => 'GET',
     p_source_type    => ORDS.source_type_plsql,
     p_source         => 'BEGIN stlunch_api.fetch_orders(p_user_id => null, p_order_date => :order_date); END;',
@@ -216,11 +213,11 @@ ORDER BY u.user_name',
     p_items_per_page => 0);
 
   ORDS.define_template(
-   p_module_name    => 'create_order',
+   p_module_name    => 'api',
    p_pattern        => 'change-password/');
 
   ORDS.define_handler(
-    p_module_name    => 'create_order',
+    p_module_name    => 'api',
     p_pattern        => 'change-password/',
     p_method         => 'POST',
     p_source_type    => ORDS.source_type_plsql,

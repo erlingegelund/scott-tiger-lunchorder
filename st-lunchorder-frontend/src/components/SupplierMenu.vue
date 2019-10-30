@@ -189,14 +189,14 @@
 </template>
 <script>
 import Navigation from "./Navigation";
-import Axios from "axios";
+import axios from "axios";
 import Octicon from "vue-octicon/components/Octicon.vue";
 import { STLunchHelper } from "../_helpers/stlunch";
 
 const supSupplierMenuURL =
-  "/ords/stlunch/api/suppliers/menus/";
+  "/ords/stlunch/service-supplier/menus/";
 const menuOptionsURL =
-  "/ords/stlunch/api/supplier_menus/options/";
+  "/ords/stlunch/service-menu/options/";
 
 export default {
   name: "Menu",
@@ -286,7 +286,7 @@ export default {
         m => m.supplier_menu_id != mitem.supplier_menu_id
       );
       this.menu = filtered;
-      Axios.delete(STLunchHelper.supplierMenuURL + mitem.supplier_menu_id);
+      axios.delete(STLunchHelper.supplierMenuURL + mitem.supplier_menu_id);
     },
     addOption(m) {
       var newId = -99;
@@ -312,17 +312,17 @@ export default {
       );
       m.options = filtered;
       this.setVKey(m);
-      Axios.delete(STLunchHelper.menuOptionsURL + opt.menu_option_id);
+      axios.delete(STLunchHelper.menuOptionsURL + opt.menu_option_id);
     },
     fetchCategories() {
-      return Axios.get(STLunchHelper.categoryURL);
+      return axios.get(STLunchHelper.categoryURL);
     },
     fetchMenu(supplierId) {
-      return Axios.get(supSupplierMenuURL + supplierId);;
+      return axios.get(supSupplierMenuURL + supplierId);;
     },
     fetchMenuOptions(m, display, edit, submitted) {
       if (!m.options || m.options.length == 0) {
-        Axios.get(menuOptionsURL + m.supplier_menu_id).then(response => {
+        axios.get(menuOptionsURL + m.supplier_menu_id).then(response => {
           let options = response.data.items;
           m.options = options.sort((o1,o2) => 
             ((o1.sort_order && o2.sort_order && o1.sort_order > o2.sort_order) ||
@@ -338,11 +338,11 @@ export default {
     insertUpdate(mitem) {
       // Do REST
       if (mitem.supplier_menu_id < 0) {
-        Axios.post(STLunchHelper.supplierMenuURL, mitem).then(response => {
+        axios.post(STLunchHelper.supplierMenuURL, mitem).then(response => {
           mitem.supplier_menu_id = response.data.supplier_menu_id;
           for (var i in mitem.options) {
             mitem.options[i].supplier_menu_id = mitem.supplier_menu_id;
-            Axios.post(STLunchHelper.menuOptionsURL, mitem.options[i]).then(
+            axios.post(STLunchHelper.menuOptionsURL, mitem.options[i]).then(
               optresponse => {
                 mitem.options[i].menu_option_id =
                   optresponse.data.menu_option_id;
@@ -352,17 +352,17 @@ export default {
           this.setVKey(mitem);
         });
       } else {
-        Axios.put(
+        axios.put(
           STLunchHelper.supplierMenuURL + mitem.supplier_menu_id,
           mitem
         );
         for (var i in mitem.options) {
           if (mitem.options[i].menu_option_id < 0) {
-            Axios.post(STLunchHelper.menuOptionsURL, mitem.options[i]).then(response => {
+            axios.post(STLunchHelper.menuOptionsURL, mitem.options[i]).then(response => {
               mitem.options[i].menu_option_id = response.data.menu_option_id;
             });
           } else {
-            Axios.put(
+            axios.put(
               STLunchHelper.menuOptionsURL + mitem.options[i].menu_option_id,
               mitem.options[i]
             );
@@ -375,15 +375,15 @@ export default {
     var supplierId = this.$route.params.supplier;
     var _self = this;
 
-    Axios.get(STLunchHelper.supplierURL + supplierId)
+    axios.get(STLunchHelper.supplierURL + supplierId)
       .then(response => {
         this.supplier.supplier_name = response.data.supplier_name;
         this.supplier.supplier_id = supplierId;
       })
 
     // samtidig kald af REST - nødvendig fordi menu manipuleres på baggrund af categories
-    Axios.all([this.fetchCategories(), this.fetchMenu(supplierId)]).then(
-      Axios.spread(function(fcat, fmenu) {
+    axios.all([this.fetchCategories(), this.fetchMenu(supplierId)]).then(
+      axios.spread(function(fcat, fmenu) {
         var dbCat = fcat.data.items;
         // Omdøb attributter i categories for at kunne anvendes i b-form-select
         var catJSON = JSON.stringify(dbCat).replace(
@@ -399,7 +399,7 @@ export default {
         for (var i in menuItems) {
           menuItems[i].options = [];
           _self.setVKey(menuItems[i]);
-          _self.setCategoryName(menuItems[i]);
+          //_self.setCategoryName(menuItems[i]);
         }
         _self.menu = menuItems;
       })

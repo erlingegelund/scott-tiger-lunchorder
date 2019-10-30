@@ -61,10 +61,10 @@
 import Navigation from "./Navigation";
 import Octicon from "vue-octicon/components/Octicon.vue";
 import { STLunchHelper } from '../_helpers/stlunch'
-import Axios from "axios"
+import axios from "axios"
 import "vue-octicon/icons";
 
-const ordersPeriodURL = "/ords/st_lunch/orders_period/get/"
+const ordersPeriodURL = "/ords/stlunch/service-orders/period/"
 
 export default {
   components: { Navigation, Octicon },
@@ -93,7 +93,7 @@ export default {
   },
   methods: {
     orderDateChange() {
-      Axios.get(ordersPeriodURL+this.orderdateFrom+"/"+this.orderdateTo).then(response => {
+      axios.get(ordersPeriodURL+this.orderdateFrom+"/"+this.orderdateTo).then(response => {
         this.orders = response.data.items;
       })
     },

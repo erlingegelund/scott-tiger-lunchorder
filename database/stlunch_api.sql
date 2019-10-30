@@ -113,7 +113,7 @@ CREATE OR REPLACE PACKAGE BODY stlunch_api AS
       FROM stlunch_supplier_menus supm
       WHERE supm.supplier_id = p_supplier_id
       AND supm.category_id = p_category_id
-      ORDER BY menu_name;
+      ORDER BY menu_name, price;
 
     APEX_JSON.open_object;
     APEX_JSON.write('menu_items', l_cursor);
@@ -431,7 +431,7 @@ CREATE OR REPLACE PACKAGE BODY stlunch_api AS
     l_old_stored          stlunch_users.passwd_enc%type;
 
   BEGIN
-    insert into ords_debug(ords_debug) values (l_body_text);
+    insert into ords_debug (data_clob) values (l_body_text);
     commit;
     
     l_user_obj := JSON_OBJECT_T(l_body_text);
