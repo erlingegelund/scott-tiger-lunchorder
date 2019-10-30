@@ -36,7 +36,7 @@
               </div>
             </div>
             <div class="p-0">
-              <router-link :to="{name: 'Forgot'}">Glemt kodeord</router-link>
+              <router-link :to="{name: 'Reset'}">Glemt kodeord</router-link>
             </div>
           </div>
           <div v-if="error" class="alert alert-danger">{{error}}</div>

@@ -5,7 +5,9 @@ const deadline = "10:00"
 const reopen = "12:00"
 
 const loginURL = "/ords/stlunch/login/user/";
-const forgotURL = "/ords/stlunch/login/forgot/";
+const resetPasswordURL = "/ords/stlunch/login/reset/";
+const changePasswordURL = "/ords/stlunch/api/order/change-password/";
+
 
 const categoryURL = "/ords/stlunch/categories/";
 const supplierURL = "/ords/stlunch/suppliers/";
@@ -37,7 +39,8 @@ export const STLunchHelper = {
     prepOrdersForReport,
     doLogin,
     doLogoff,
-    emailNewPassword,
+    resetPassword,
+    changePassword,
     prepOrderSuppliers,
     prepMenuOptions,
     submitOrder,
@@ -151,7 +154,7 @@ function doLogin(loginComponent, username, password) {
             },
                 error => {
                     loginComponent.error = error.toString();
-                    loginComponent.loading = false;        
+                    loginComponent.loading = false;
                 })
         } else {
             loginComponent.error = "Brugernavn eller kodeord er forkert";
@@ -185,14 +188,31 @@ function doLogoff() {
     axios.defaults.headers.common["Authorization"] = null;
 }
 
-function emailNewPassword(forgotComponent) {
-    let forgotObj = { user_email: forgotComponent.username };
-    axios.post(forgotURL, forgotObj).then(response => {
-        forgotComponent.$router.push('{name: "Login"}');
+function resetPassword(resetComponent) {
+    let resetObj = { user_email: resetComponent.username };
+    axios.post(resetPasswordURL, resetObj).then(response => {
+        resetComponent.$router.push('{name: "Login"}');
     },
-    error => {
-        forgotComponent.error = error;
-    });
+        error => {
+            resetComponent.loading = false;
+            resetComponent.error = "E-mail tilhører ikke en registreret bruger";
+        });
+}
+
+function changePassword(changeComponent) {
+    let userId = JSON.parse(sessionStorage.getItem("user")).user_id
+    let changeObj = { user_id: userId, old_password: changeComponent.currentPassword, new_password: changeComponent.newPassword };
+    axios.post(changePasswordURL, changeObj)
+        .then(response => {
+            console.log(response)
+            changeComponent.success = "Dit kodeord er ændret";
+            changeComponent.loading = false;
+        })
+        .catch(error => {
+            console.log(error)
+            changeComponent.loading = false;
+            changeComponent.error = "Nuværende kodeord er ikke korrekt";
+        });
 }
 
 function prepareMenuItems(menuItems) {
@@ -216,7 +236,7 @@ function prepareMenuItems(menuItems) {
 
 function prepOrderSuppliers(orderComponent) {
     // Check at token er sat i axios headers common
-    if(!axios.defaults.headers.common["Authorization"]) {
+    if (!axios.defaults.headers.common["Authorization"]) {
         let token = sessionStorage.getItem(STLunchHelper.tokenStorage);
         axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     }

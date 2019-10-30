@@ -205,14 +205,26 @@ ORDER BY u.user_name',
 
   ORDS.define_template(
    p_module_name    => 'login',
-   p_pattern        => 'forgot/');
+   p_pattern        => 'reset/');
 
   ORDS.define_handler(
     p_module_name    => 'login',
-    p_pattern        => 'forgot/',
+    p_pattern        => 'reset/',
     p_method         => 'POST',
     p_source_type    => ORDS.source_type_plsql,
     p_source         => 'BEGIN stlunch_api.email_new_password(p_body_text => :body_text); END;',
+    p_items_per_page => 0);
+
+  ORDS.define_template(
+   p_module_name    => 'create_order',
+   p_pattern        => 'change-password/');
+
+  ORDS.define_handler(
+    p_module_name    => 'create_order',
+    p_pattern        => 'change-password/',
+    p_method         => 'POST',
+    p_source_type    => ORDS.source_type_plsql,
+    p_source         => 'BEGIN stlunch_api.change_password(p_body_text => :body_text); END;',
     p_items_per_page => 0);
 
   COMMIT;

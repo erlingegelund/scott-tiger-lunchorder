@@ -55,7 +55,7 @@ export default {
 
       this.loading = true;
 
-      STLunchHelper.emailNewPassword(this);
+      STLunchHelper.resetPassword(this);
     }
   }
 };

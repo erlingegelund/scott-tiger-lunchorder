@@ -36,6 +36,7 @@
         v-show="showNavIcon"
       >
         <template v-slot:button-content>{{getUser()}}</template>
+        <b-dropdown-item :to="{name: 'ChangePassword'}">Skift kodeord</b-dropdown-item>
         <b-dropdown-item @click="logoff()">Log af</b-dropdown-item>
       </b-dropdown>
     </div>
