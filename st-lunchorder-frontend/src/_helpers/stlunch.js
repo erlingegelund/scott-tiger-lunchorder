@@ -114,9 +114,6 @@ function prepOrdersForReport(orders) {
     for (var i in orders) {
         let order = orders[i];
         order.total_price = order.items_ordered * order.price;
-        // for (var j in order.options) {
-        //     order.options[j].value = order.options[j].selected.split("\n");
-        // }
     }
 }
 
@@ -142,10 +139,17 @@ function doLogin(loginComponent, username, password) {
                 var user = JSON.stringify(users[0]);
                 sessionStorage.setItem(STLunchHelper.userStorage, user);
                 loginComponent.$router.push(loginComponent.returnUrl);
+                /*
+                // Timer funktionalitet til at hente nyt token, når dette udløber
+                // Der er en problematik om beskyttelse af client ID og secret. 
+                // Derfor er funktionaliteten udkommenteret 
+                let tokenExpires = response.data.expires_in
+                setTimeout(refreshOAuthToken, (tokenExpires-1)*1000);
+                */
             },
                 error => {
-                    console.log(error);
-
+                    loginComponent.error = error.toString();
+                    loginComponent.loading = false;        
                 })
         } else {
             loginComponent.error = "Brugernavn eller kodeord er forkert";
@@ -153,6 +157,25 @@ function doLogin(loginComponent, username, password) {
         }
     });
 }
+
+/*
+function refreshOAuthToken() {
+    const basicAuth = "Basic " + btoa(oauth[0].client_id + ":" + oauth[0].client_secret);
+    const authURL = "/ords/stlunch/oauth/token";
+    const config = {
+        headers: {
+            Authorization: basicAuth,
+            "Content-Type": "application/x-www-form-urlencoded"
+        }
+    };
+    let token = sessionStorage.setItem(STLunchHelper.tokenStorage);
+    axios.post(authURL, "grant_type=refresh_token&refresh_token="+token, config).then(response => {
+        let token = response.data.access_token;
+        sessionStorage.setItem(STLunchHelper.tokenStorage, token);
+        axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    });
+}
+*/
 
 function doLogoff() {
     sessionStorage.removeItem(tokenStorage);
@@ -180,6 +203,11 @@ function prepareMenuItems(menuItems) {
 }
 
 function prepOrderSuppliers(orderComponent) {
+    // Check at token er sat i axios headers common
+    if(!axios.defaults.headers.common["Authorization"]) {
+        let token = sessionStorage.getItem(STLunchHelper.tokenStorage);
+        axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    }
     axios.get(supplierCategoriesURL + orderComponent.order.user_id.toString()).then(
         response => {
             var suppliersCategories = response.data.suppliers;

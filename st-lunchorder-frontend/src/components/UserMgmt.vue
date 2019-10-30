@@ -77,8 +77,8 @@ import Octicon from "vue-octicon/components/Octicon.vue";
 import { STLunchHelper } from "../_helpers/stlunch";
 import "vue-octicon/icons";
 
-const userURL = "/ords/st_lunch/stlunch_users/";
-const activeUserURL = "/ords/st_lunch/stlunch_active_users/";
+const userURL = "/ords/stlunch/users/";
+const activeUserURL = "/ords/stlunch/active_users/";
 
 export default {
   components: { Navigation, Octicon },

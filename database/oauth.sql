@@ -9,10 +9,11 @@ BEGIN
   l_role_arr(1) := 'stlunch_role';
   l_role_arr(2) := 'oracle.dbtools.role.autorest.ST_LUNCH.STLUNCH_CATEGORIES';
   l_role_arr(3) := 'oracle.dbtools.role.autorest.ST_LUNCH.STLUNCH_SUPPLIERS';
-  l_role_arr(4) := 'oracle.dbtools.role.autorest.ST_LUNCH.STLUNCH_ACTIVE_USERS';
+  l_role_arr(4) := 'oracle.dbtools.role.autorest.ST_LUNCH.STLUNCH_USERS';
   l_role_arr(5) := 'oracle.dbtools.role.autorest.ST_LUNCH.STLUNCH_SUPPLIER_MENUS';
   l_role_arr(6) := 'oracle.dbtools.role.autorest.ST_LUNCH.STLUNCH_MENU_OPTIONS';
   l_role_arr(7) := 'oracle.dbtools.role.autorest.ST_LUNCH.STLUNCH_ORDERS';
+  l_role_arr(8) := 'oracle.dbtools.role.autorest.ST_LUNCH.STLUNCH_ACTIVE_USERS';
   --l_pattern_arr(1) := '/stlunch/api/*';
   l_module_arr(1) := 'create_order';
   l_module_arr(2) := 'get_user_order';
