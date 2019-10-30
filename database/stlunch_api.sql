@@ -1,38 +1,42 @@
 CREATE OR REPLACE PACKAGE stlunch_api AS
   PROCEDURE fetch_supplier_categories(
-    p_user_id stlunch_users.user_id%type
+    p_user_id          IN stlunch_users.user_id%type
   );
   PROCEDURE fetch_supplier_cat_menus(
-    p_supplier_id stlunch_suppliers.supplier_id%type
-  , p_category_id stlunch_categories.category_id%type
+    p_supplier_id      IN stlunch_suppliers.supplier_id%type
+  , p_category_id      IN stlunch_categories.category_id%type
   );
   PROCEDURE fetch_orders (
-    p_user_id stlunch_orders.user_id%TYPE
-  , p_order_date VARCHAR2
+    p_user_id          IN stlunch_orders.user_id%TYPE
+  , p_order_date       IN VARCHAR2
   );
   PROCEDURE create_order (
-    p_body IN BLOB
+    p_body             IN BLOB
   );
   
   PROCEDURE login (
-    p_body_text IN CLOB
+    p_body_text        IN CLOB
   );
   
   PROCEDURE encrypt_password (
-    p_email IN stlunch_users.user_email%TYPE
-  , p_passwd_enc IN OUT stlunch_users.passwd_enc%TYPE
-  , p_passwd_salt OUT stlunch_users.passwd_salt%TYPE
+    p_email            IN stlunch_users.user_email%TYPE
+  , p_passwd_enc   IN OUT stlunch_users.passwd_enc%TYPE
+  , p_passwd_salt     OUT stlunch_users.passwd_salt%TYPE
+  );
+  
+  PROCEDURE email_new_password (
+    p_email            IN stlunch_users.user_email%TYPE
   );
 END;
 /
 
 CREATE OR REPLACE PACKAGE BODY stlunch_api AS
   PROCEDURE fetch_supplier_categories(
-    p_user_id stlunch_users.user_id%type
+    p_user_id          IN stlunch_users.user_id%type
   ) IS
-    l_cursor SYS_REFCURSOR;
-    l_last_supplier_id stlunch_suppliers.supplier_id%type := 0;
-    l_last_category_id stlunch_categories.category_id%type := 0;
+    l_cursor              SYS_REFCURSOR;
+    l_last_supplier_id    stlunch_suppliers.supplier_id%type := 0;
+    l_last_category_id    stlunch_categories.category_id%type := 0;
   BEGIN
     -- Find leverandør og kategori for brugers seneste ordre
     FOR rec IN (
@@ -80,10 +84,10 @@ CREATE OR REPLACE PACKAGE BODY stlunch_api AS
   END fetch_supplier_categories;
   
   PROCEDURE fetch_supplier_cat_menus(
-    p_supplier_id stlunch_suppliers.supplier_id%type
-  , p_category_id stlunch_categories.category_id%type
+    p_supplier_id      IN stlunch_suppliers.supplier_id%type
+  , p_category_id      IN stlunch_categories.category_id%type
   ) IS
-    l_cursor SYS_REFCURSOR;
+    l_cursor              SYS_REFCURSOR;
   BEGIN
     OPEN l_cursor FOR
       SELECT supplier_menu_id AS "id"
@@ -113,11 +117,11 @@ CREATE OR REPLACE PACKAGE BODY stlunch_api AS
   END fetch_supplier_cat_menus;
   
   FUNCTION fetch_orders_cursor (
-    p_user_id stlunch_orders.user_id%TYPE
-  , p_order_date stlunch_orders.order_date%TYPE
+    p_user_id             stlunch_orders.user_id%TYPE
+  , p_order_date          stlunch_orders.order_date%TYPE
   ) RETURN SYS_REFCURSOR
   IS
-    l_cursor           SYS_REFCURSOR;
+    l_cursor              SYS_REFCURSOR;
   BEGIN
     OPEN l_cursor FOR
       SELECT order_id AS "order_id"
@@ -150,11 +154,11 @@ CREATE OR REPLACE PACKAGE BODY stlunch_api AS
   END;
   
   PROCEDURE fetch_orders (
-    p_user_id stlunch_orders.user_id%TYPE
-  , p_order_date VARCHAR2
+    p_user_id          IN stlunch_orders.user_id%TYPE
+  , p_order_date       IN VARCHAR2
   ) IS
-    l_order_date DATE;
-    l_cursor           SYS_REFCURSOR;
+    l_order_date          DATE;
+    l_cursor              SYS_REFCURSOR;
   BEGIN
     if p_order_date is null then
       l_order_date := trunc(sysdate);
@@ -172,10 +176,10 @@ CREATE OR REPLACE PACKAGE BODY stlunch_api AS
   END fetch_orders; 
   
   PROCEDURE fetch_orders (
-    p_user_id stlunch_orders.user_id%TYPE
-  , p_order_date stlunch_orders.order_date%TYPE
+    p_user_id          IN stlunch_orders.user_id%TYPE
+  , p_order_date       IN stlunch_orders.order_date%TYPE
   ) IS
-    l_cursor           SYS_REFCURSOR;
+    l_cursor              SYS_REFCURSOR;
   BEGIN
     l_cursor := fetch_orders_cursor(p_user_id, p_order_date);
     
@@ -188,10 +192,10 @@ CREATE OR REPLACE PACKAGE BODY stlunch_api AS
   END fetch_orders; 
   
   PROCEDURE create_order(
-    p_body IN BLOB
+    p_body             IN BLOB
   ) IS
-    TYPE t_order_tab IS TABLE OF stlunch_orders%ROWTYPE;
-    TYPE t_option_tab IS TABLE OF stLunch_order_options%ROWTYPE;
+    TYPE t_order_tab   IS TABLE OF stlunch_orders%ROWTYPE;
+    TYPE t_option_tab  IS TABLE OF stLunch_order_options%ROWTYPE;
     
     l_order_obj        JSON_OBJECT_T;
     l_items_arr        JSON_ARRAY_T;
@@ -303,12 +307,11 @@ CREATE OR REPLACE PACKAGE BODY stlunch_api AS
   
   PROCEDURE get_encrypted_password(
     p_user_rec IN OUT NOCOPY stlunch_users%ROWTYPE
-  , p_password stlunch_users.passwd_enc%TYPE
+  , p_password            stlunch_users.passwd_enc%TYPE
   ) IS 
-    l_enc_buf     RAW(4000);
-    l_hash_buf    RAW(4000);
-    l_base64_buf  RAW(4000);
-    l_passwd_enc  VARCHAR2(4000);
+    l_enc_buf             RAW(4000);
+    l_hash_buf            RAW(4000);
+    l_base64_buf          RAW(4000);
   BEGIN
     IF p_user_rec.passwd_salt IS NOT NULL THEN
       l_enc_buf := UTL_RAW.CAST_TO_RAW(p_user_rec.user_email||p_user_rec.passwd_salt||p_password);
@@ -316,23 +319,22 @@ CREATE OR REPLACE PACKAGE BODY stlunch_api AS
         l_enc_buf
       , DBMS_CRYPTO.HASH_SH256);
       l_base64_buf := UTL_ENCODE.BASE64_ENCODE(l_hash_buf);
-      l_passwd_enc := UTL_RAW.CAST_TO_VARCHAR2(l_base64_buf);
-      p_user_rec.passwd_enc := l_passwd_enc;
+      p_user_rec.passwd_enc := UTL_RAW.CAST_TO_VARCHAR2(l_base64_buf);
     END IF;
   END get_encrypted_password;
   
   PROCEDURE login (
-    p_body_text IN CLOB
+    p_body_text        IN CLOB
   ) IS
-    l_body_text       CLOB := p_body_text;
-    l_user_obj        JSON_OBJECT_T;   
+    l_body_text           CLOB := p_body_text;
+    l_user_obj            JSON_OBJECT_T;   
     
-    l_user_email      stlunch_users.user_email%TYPE;
-    l_password        stlunch_users.passwd_enc%TYPE;
-    l_user_rec        stlunch_users%ROWTYPE;
+    l_user_email          stlunch_users.user_email%TYPE;
+    l_password            stlunch_users.passwd_enc%TYPE;
+    l_user_rec            stlunch_users%ROWTYPE;
     
-    l_user_cursor     SYS_REFCURSOR;
-    l_oauth_cursor    SYS_REFCURSOR;
+    l_user_cursor         SYS_REFCURSOR;
+    l_oauth_cursor        SYS_REFCURSOR;
   BEGIN
     l_user_obj := JSON_OBJECT_T(l_body_text);
     l_user_email := l_user_obj.get_string('user_email');
@@ -351,6 +353,7 @@ CREATE OR REPLACE PACKAGE BODY stlunch_api AS
     WHERE user_email = l_user_email
     AND passwd_enc = l_user_rec.passwd_enc;
     
+    -- Hent client ID og secret fra OAuth dictionary
     OPEN l_oauth_cursor FOR
     SELECT client_id AS "client_id", client_secret AS "client_secret"
     FROM user_ords_clients
@@ -364,12 +367,12 @@ CREATE OR REPLACE PACKAGE BODY stlunch_api AS
   END login;
   
   PROCEDURE encrypt_password(
-    p_email IN stlunch_users.user_email%TYPE
-  , p_passwd_enc IN OUT stlunch_users.passwd_enc%TYPE
-  , p_passwd_salt OUT stlunch_users.passwd_salt%TYPE
+    p_email            IN stlunch_users.user_email%TYPE
+  , p_passwd_enc   IN OUT stlunch_users.passwd_enc%TYPE
+  , p_passwd_salt     OUT stlunch_users.passwd_salt%TYPE
   ) 
   IS
-    l_user_rec stlunch_users%ROWTYPE;
+    l_user_rec            stlunch_users%ROWTYPE;
   BEGIN
     l_user_rec.user_email := p_email;
     l_user_rec.passwd_salt := DBMS_RANDOM.string('p',10);    
@@ -379,6 +382,29 @@ CREATE OR REPLACE PACKAGE BODY stlunch_api AS
     p_passwd_salt := l_user_rec.passwd_salt;
     p_passwd_enc := l_user_rec.passwd_enc;
   END encrypt_password;
+
+  PROCEDURE email_new_password (
+    p_email            IN stlunch_users.user_email%TYPE
+  ) IS
+    l_user_rec            stlunch_users%ROWTYPE;
+    l_new_passwd          stlunch_users.passwd_enc%type;
+  BEGIN
+    SELECT *
+    INTO l_user_rec
+    FROM stlunch_active_users
+    WHERE user_email = p_email;
+    
+    l_new_passwd := DBMS_RANDOM.string('a',12);
+    l_user_rec.passwd_enc := l_new_passwd;
+    
+    encrypt_password(l_user_rec.user_email, l_user_rec.passwd_enc, l_user_rec.passwd_salt);
+    
+    UPDATE stlunch_users 
+    SET passwd_enc = l_user_rec.passwd_enc, passwd_salt = l_user_rec.passwd_salt
+    WHERE user_id = l_user_rec.user_id;
+    
+    stlunch_mails.send_new_password(l_user_rec.user_email, l_new_passwd);
+  END email_new_password;
 
 END stlunch_api;
 /

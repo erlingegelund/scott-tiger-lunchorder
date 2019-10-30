@@ -11,6 +11,11 @@ CREATE OR REPLACE PACKAGE stlunch_mails AS
     PROCEDURE send_daily_mails;
 
     PROCEDURE send_month_report;
+    
+    PROCEDURE send_new_password(
+      p_email             stlunch_users.user_email%type
+    , p_new_password      stlunch_users.passwd_enc%type
+    );
 
 END stlunch_mails;
 /
@@ -37,6 +42,7 @@ CREATE OR REPLACE PACKAGE BODY stlunch_mails AS
      p_subject   IN VARCHAR2
    , p_body_html IN VARCHAR2
    , p_recipient IN VARCHAR2
+   , p_cc_admin  IN BOOLEAN DEFAULT TRUE
    ) IS
       c UTL_SMTP.CONNECTION;
       l_cc VARCHAR2(4000); 
@@ -53,14 +59,16 @@ CREATE OR REPLACE PACKAGE BODY stlunch_mails AS
       UTL_SMTP.EHLO(c, 'scott-tiger.dk');
       UTL_SMTP.MAIL(c, 'info@scott-tiger.dk');
       
-      FOR r_cc IN (SELECT user_email FROM stlunch_users WHERE administrator_yn = 'Y' AND nvl(inactive_yn,'N') = 'N') LOOP
-         UTL_SMTP.RCPT(c, r_cc.user_email);
-         IF l_cc IS NULL THEN
-            l_cc := r_cc.user_email;
-         ELSE
-            l_cc := l_cc||';'||r_cc.user_email;
-         END IF;
-      END LOOP;
+      IF p_recipient IS NULL OR p_cc_admin THEN
+         FOR r_cc IN (SELECT user_email FROM stlunch_users WHERE administrator_yn = 'Y' AND nvl(inactive_yn,'N') = 'N') LOOP
+            UTL_SMTP.RCPT(c, r_cc.user_email);
+            IF l_cc IS NULL THEN
+               l_cc := r_cc.user_email;
+            ELSE
+               l_cc := l_cc||';'||r_cc.user_email;
+            END IF;
+         END LOOP;
+      END IF;
 
       IF p_recipient IS NULL THEN
          l_recipient := l_cc;
@@ -133,7 +141,7 @@ CREATE OR REPLACE PACKAGE BODY stlunch_mails AS
          l_body_html := l_body_html||'.opttable tr {background-color: transparent;}'||utl_tcp.crlf;
          l_body_html := l_body_html||'</style></head>'||utl_tcp.crlf;
          l_body_html := l_body_html||'<body>'||utl_tcp.crlf;
-         l_body_html := l_body_html||'<b>Her er Scott/Tigers frokostbestilling for '||l_order_date||'</b><br>'||utl_tcp.crlf;
+         l_body_html := l_body_html||'<b>Her er scott/tigers frokostbestilling for '||l_order_date||'</b><br>'||utl_tcp.crlf;
          IF l_order_memo IS NOT NULL THEN
             l_body_html := l_body_html||'<b>'||l_order_memo||'</b><br>';
          END IF;
@@ -183,7 +191,7 @@ CREATE OR REPLACE PACKAGE BODY stlunch_mails AS
          l_body_html := l_body_html||'<br><b>Med venlig hilsen<br><br>Scott-Tiger</b></body></html>';
          
          send_mail(
-           p_subject => c1.supplier_name||' - Scott/Tiger frokostbestilling til '||l_order_date
+           p_subject => c1.supplier_name||' - scott/tiger frokostbestilling til '||l_order_date
          , p_body_html => l_body_html
          , p_recipient => c1.supplier_email
       );
@@ -204,7 +212,7 @@ CREATE OR REPLACE PACKAGE BODY stlunch_mails AS
       l_body_html := l_body_html||'tr:nth-child(even) {background-color: #dddddd;}'||utl_tcp.crlf;
       l_body_html := l_body_html||'</style></head>'||utl_tcp.crlf;
       l_body_html := l_body_html||'<body>'||utl_tcp.crlf;
-      l_body_html := l_body_html||'<b>Oversigt over Scott/Tigers frokostbestilling for '||l_order_date||'</b><br>'||utl_tcp.crlf;
+      l_body_html := l_body_html||'<b>Oversigt over scott/tigers frokostbestilling for '||l_order_date||'</b><br>'||utl_tcp.crlf;
       l_total     := 0;
       
       FOR c1 IN (
@@ -237,10 +245,31 @@ CREATE OR REPLACE PACKAGE BODY stlunch_mails AS
       l_body_html := l_body_html||'</body></html>';
       
       send_mail(
-        p_subject => 'Scott/Tiger månedlig oversigt over frokostbestillinger for ' || l_order_date
+        p_subject => 'scott/tiger månedlig oversigt over frokostbestillinger for ' || l_order_date
       , p_body_html => l_body_html
       , p_recipient => null
       );
    END send_month_report;
+   
+   PROCEDURE send_new_password(
+      p_email             stlunch_users.user_email%type
+    , p_new_password      stlunch_users.passwd_enc%type
+   ) IS
+       l_body_html VARCHAR2(4000);
+  BEGIN
+      l_body_html := '<html><head><meta charset="utf-8"><meta content=''text/html; charset=utf-8'' http-equiv=''Content-Type''></head>'||utl_tcp.crlf;
+      l_body_html := l_body_html||'<body>'||utl_tcp.crlf;
+      l_body_html := l_body_html||'<p>Dit nye kodeord til scott/tiger frokostbestilling er: <b>'||p_new_password||'</b></p>'||utl_tcp.crlf;
+      l_body_html := l_body_html || '<p>Med venlig hilsen<br>Frokost bestilling systemet</p>'||utl_tcp.crlf;
+      l_body_html := l_body_html||'</body></html>';
+     
+      send_mail(
+        p_subject => 'scott/tiger frokostbestilling nyt kodeord'
+      , p_body_html => l_body_html
+      , p_recipient => p_email
+      , p_cc_admin  => FALSE
+      );
+  END send_new_password;
+
 END stlunch_mails;
 /
