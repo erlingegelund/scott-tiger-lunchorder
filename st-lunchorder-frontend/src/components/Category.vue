@@ -1,4 +1,4 @@
-'<template>
+<template>
   <div>
     <Navigation :showNavIcon="true"></Navigation>
     <div class="container-fluid">
@@ -18,7 +18,11 @@
                 </span>
               </div>
             </div>
-            <div class="row row-item align-items-center" v-for="cat in categories" :key="cat.category_id">
+            <div
+              class="row row-item align-items-center"
+              v-for="cat in categories"
+              :key="cat.category_id"
+            >
               <div class="col col-md-10">
                 <b-form-input
                   type="text"
@@ -37,7 +41,7 @@
                 <span class="btn-edit" v-else @click="edit(cat)">
                   <octicon name="pencil"></octicon>
                 </span>
-                <span class="btn-delete" @click="del(cat)">
+                <span class="btn-delete" @click="confirmDelete(cat)">
                   <octicon name="x"></octicon>
                 </span>
               </div>
@@ -45,6 +49,12 @@
           </div>
         </div>
       </div>
+      <b-modal id="d-confirm" title="Bekræft slet" @ok="deleteConfirmed">
+        Er du sikker på, at vil slette kategorien
+        <i>
+          <b>{{categoryToDelete.category_name}}</b>
+        </i>?
+      </b-modal>
     </div>
   </div>
 </template>
@@ -58,7 +68,8 @@ export default {
   components: { Navigation, Octicon },
   data() {
     return {
-      categories: []
+      categories: [],
+      categoryToDelete: {category_id: 0, category_name: ""}
     };
   },
   methods: {
@@ -76,8 +87,12 @@ export default {
     submit(cat) {
       STLunchHelper.submitCategory(cat);
     },
-    del(cat) {
-      STLunchHelper.deleteCategory(cat, this);
+    confirmDelete(cat) {
+      this.categoryToDelete = cat;
+      this.$bvModal.show("d-confirm");
+    },
+    deleteConfirmed() {
+      STLunchHelper.deleteCategory(this.categoryToDelete, this);
     }
   },
   created: function() {

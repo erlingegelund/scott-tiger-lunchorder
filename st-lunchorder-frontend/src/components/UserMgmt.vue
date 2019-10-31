@@ -59,7 +59,7 @@
                 <span class="btn-edit" v-else @click="edit(user)">
                   <octicon name="pencil"></octicon>
                 </span>
-                <span class="btn-delete" @click="del(user)">
+                <span class="btn-delete" @click="confirmDelete(user)">
                   <octicon name="x"></octicon>
                 </span>
               </div>
@@ -67,12 +67,18 @@
           </div>
         </div>
       </div>
+      <b-modal id="d-confirm" @ok="deleteConfirmed" title="Bekræft slet">
+        Er du sikker på, at vil slette brugeren
+        <i>
+          <b>{{userToDelete.user_name}}</b>
+        </i>?
+      </b-modal>
     </div>
   </div>
 </template>
 <script>
 import Navigation from "./Navigation";
-import Axios from "axios";
+import axios from "axios";
 import Octicon from "vue-octicon/components/Octicon.vue";
 import { STLunchHelper } from "../_helpers/stlunch";
 import "vue-octicon/icons";
@@ -84,7 +90,8 @@ export default {
   components: { Navigation, Octicon },
   data() {
     return {
-      users: []
+      users: [],
+      userToDelete: {user_id: 0, user_name: ""}
     };
   },
   methods: {
@@ -109,13 +116,13 @@ export default {
     submit(user) {
       if (user.user_email && user.user_name && this.validateMail(user)) {
         if (user.user_id < 0) {
-          Axios.post(userURL, user).then(response => {
+          axios.post(userURL, user).then(response => {
             user.user_id = response.data.user_id;
           });
         } else {
-          Axios.put(userURL + user.user_id.toString(), user).catch(error =>
-            console.log(error)
-          );
+          axios
+            .put(userURL + user.user_id.toString(), user)
+            .catch(error => console.log(error));
         }
         user.edit = false;
         user.submitted = false;
@@ -124,11 +131,18 @@ export default {
       }
       this.setVKey(user);
     },
-    del(user) {
+    confirmDelete(user) {
+      this.userToDelete = user;
+      this.$bvModal.show("d-confirm");
+    },
+    deleteConfirmed() {
+      var user = this.userToDelete;
       user.inactive_yn = "Y";
-      Axios.put(userURL + user.user_id.toString(), user).then(response => {
+      axios.put(userURL + user.user_id.toString(), user).then(response => {
         var filtered = this.users.filter(u => u.user_id != user.user_id);
         this.users = filtered;
+        user.user_id = null;
+        user.user_name = "";
       });
     },
     setVKey(user) {
@@ -140,7 +154,7 @@ export default {
     }
   },
   created: function() {
-    Axios.get(activeUserURL).then(response => {
+    axios.get(activeUserURL).then(response => {
       var users = response.data.items;
       for (var i in users) {
         this.setVKey(users[i]);

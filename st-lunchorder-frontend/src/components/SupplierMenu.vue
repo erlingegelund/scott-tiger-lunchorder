@@ -84,7 +84,7 @@
                     <span class="btn-edit" v-else @click="edit(m)">
                       <octicon name="pencil"></octicon>
                     </span>
-                    <span class="btn-delete" @click="del(m)">
+                    <span class="btn-delete" @click="confirmDelMenu(m)">
                       <octicon name="x"></octicon>
                     </span>
                   </div>
@@ -173,7 +173,7 @@
                     ></b-form-textarea>
                   </div>
                   <div class="col col-md-1" style="text-align: right;">
-                    <span class="btn-delete" v-show="m.edit" @click="delOption(m,opt)">
+                    <span class="btn-delete" v-show="m.edit" @click="confirmDelOption(m,opt)">
                       <octicon name="x"></octicon>
                     </span>
                   </div>
@@ -184,6 +184,18 @@
           </div>
         </div>
       </div>
+      <b-modal id="d-confirm-menu" title="Bekræft slet" @ok="delMenuConfirmed">
+        Er du sikker på, at vil slette menu 
+        <i>
+          <b>{{menuToDelete.menu_name}}</b>
+        </i>?
+      </b-modal>
+      <b-modal id="d-confirm-option" title="Bekræft slet" @ok="delOptionConfirmed">
+        Er du sikker på, at vil slette valgmuligheden 
+        <i>
+          <b>{{optionToDelete.description}}</b>
+        </i>?
+      </b-modal>
     </div>
   </div>
 </template>
@@ -205,7 +217,9 @@ export default {
     return {
       supplier: { supplier_id: "", supplier_name: "" },
       menu: [],
-      categories: []
+      categories: [],
+      menuToDelete: {menu_name: ""},
+      optionToDelete: {description: ""}
     };
   },
   methods: {
@@ -281,12 +295,20 @@ export default {
       }
       this.setVKey(mitem);
     },
-    del(mitem) {
+    confirmDelMenu(mitem) {
+      this.menuToDelete = mitem;
+      this.$bvModal.show("d-confirm-menu");
+    },
+    delMenuConfirmed() {
+      var mitem = this.menuToDelete;
       var filtered = this.menu.filter(
         m => m.supplier_menu_id != mitem.supplier_menu_id
       );
       this.menu = filtered;
-      axios.delete(STLunchHelper.supplierMenuURL + mitem.supplier_menu_id);
+      axios.delete(STLunchHelper.supplierMenuURL + mitem.supplier_menu_id).then(response => {
+        mitem.menu_name = "";
+        mitem.menud_id = 0;
+      });
     },
     addOption(m) {
       var newId = -99;
@@ -306,13 +328,23 @@ export default {
       m.options.push(opt);
       this.setVKey(m);
     },
-    delOption(m, opt) {
+    confirmDelOption(m, opt) {
+      this.menuToDelete = m;
+      this.optionToDelete = opt;
+      this.$bvModal.show("d-confirm-option");
+    },
+    delOptionConfirmed() {
+      var m = this.menuToDelete;
+      var opt = this.optionToDelete;
       var filtered = m.options.filter(
         o => o.menu_option_id != opt.menu_option_id
       );
       m.options = filtered;
       this.setVKey(m);
-      axios.delete(STLunchHelper.menuOptionsURL + opt.menu_option_id);
+      axios.delete(STLunchHelper.menuOptionsURL + opt.menu_option_id).then(response => {
+        opt.option_id = 0;
+        opt.description = "";
+      })
     },
     fetchCategories() {
       return axios.get(STLunchHelper.categoryURL);

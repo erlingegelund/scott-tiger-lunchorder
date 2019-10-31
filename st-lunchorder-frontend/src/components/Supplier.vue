@@ -74,7 +74,7 @@
                 <span class="btn-edit" v-else @click="edit(sup)">
                   <octicon name="pencil"></octicon>
                 </span>
-                <span class="btn-delete" @click="del(sup)">
+                <span class="btn-delete" @click="confirmDelete(sup)">
                   <octicon name="x"></octicon>
                 </span>
                 <span style="margin-left: 10px;" @click="showMenu(sup)">
@@ -85,12 +85,18 @@
           </div>
         </div>
       </div>
+      <b-modal id="d-confirm" title="Bekræft slet" @ok="deleteConfirmed">
+        Er du sikker på, at vil slette leverandøren
+        <i>
+          <b>{{supplierToDelete.supplier_name}}</b>
+        </i>?
+      </b-modal>
     </div>
   </div>
 </template>
 <script>
 import Navigation from "./Navigation";
-import Axios from "axios";
+import axios from "axios";
 import Octicon from "vue-octicon/components/Octicon.vue";
 import { STLunchHelper } from "../_helpers/stlunch";
 import "vue-octicon/icons";
@@ -99,7 +105,8 @@ export default {
   components: { Navigation, Octicon },
   data() {
     return {
-      suppliers: []
+      suppliers: [],
+      supplierToDelete: {supplier_name: ""}
     };
   },
   methods: {
@@ -124,7 +131,7 @@ export default {
     submit(sup) {
       if (sup.supplier_email && sup.supplier_name && this.validateMail(sup)) {
         if (sup.supplier_id < 0) {
-          Axios.post(STLunchHelper.supplierURL, sup)
+          axios.post(STLunchHelper.supplierURL, sup)
             .then(response => {
               sup.supplier_id = response.data.supplier_id;
             })
@@ -132,7 +139,7 @@ export default {
               console.log(error);
             });
         } else {
-          Axios.put(STLunchHelper.supplierURL + sup.supplier_id.toString(), sup).catch(
+          axios.put(STLunchHelper.supplierURL + sup.supplier_id.toString(), sup).catch(
             error => {
               console.log(error);
             }
@@ -145,13 +152,20 @@ export default {
       }
       this.setVKey(sup);
     },
-    del(sup) {
-      Axios.delete(STLunchHelper.supplierURL + sup.supplier_id.toString())
+    confirmDelete(sup) {
+      this.supplierToDelete = sup;
+      this.$bvModal.show("d-confirm");
+    },
+    deleteConfirmed() {
+      var sup = this.supplierToDelete;
+      axios.delete(STLunchHelper.supplierURL + sup.supplier_id.toString())
         .then(response => {
           var filtered = this.suppliers.filter(
             s => s.supplier_id != sup.supplier_id
           );
           this.suppliers = filtered;
+          sup.supplier_name = "";
+          sup.supplier_id = 0;
         })
         .catch(error => {
           console.log(error);
@@ -172,7 +186,7 @@ export default {
     }
   },
   created: function() {
-    Axios.get(STLunchHelper.supplierURL)
+    axios.get(STLunchHelper.supplierURL)
       .then(response => {
         var _suppliers = response.data.items;
         // opret vkey i hver supplier element - bruges til at kontrollere visning

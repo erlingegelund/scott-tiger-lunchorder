@@ -328,6 +328,8 @@ function deleteCategory(cat, categoryComponent) {
                 c => c.category_id != cat.category_id
             );
             categoryComponent.categories = filtered;
+            cat.category_id = 0;
+            cat.category_name = "";
         }
     );
 }
