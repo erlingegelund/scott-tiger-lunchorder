@@ -1,6 +1,6 @@
 /*
 CREATE user st_lunch identified BY st_lunch;
-GRANT connect, resource TO st_lunch;
+GRANT connect, resource, create view TO st_lunch;
 ALTER USER st_lunch quota unlimited ON users;
 
 grant execute on sys.dbms_crypto to st_lunch;
