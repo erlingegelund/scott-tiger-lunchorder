@@ -1,0 +1,33 @@
+INSERT INTO stlunch_categories (category_id,category_name) VALUES (1,'Smørrebrød');
+INSERT INTO stlunch_categories (category_id,category_name) VALUES (2,'Salater');
+INSERT INTO stlunch_categories (category_id,category_name) VALUES (3,'Bagels');
+INSERT INTO stlunch_categories (category_id,category_name) VALUES (4,'Sandwiches');
+INSERT INTO stlunch_categories (category_id,category_name) VALUES (5,'Boller');
+INSERT INTO stlunch_categories (category_id,category_name) VALUES (6,'Ostemadder');
+
+INSERT INTO stlunch_suppliers (supplier_id,supplier_email,supplier_name,supplier_phone) VALUES (10,'slagterjohnoglise@live.dk','Slagter Lise og John','43990134');
+INSERT INTO stlunch_suppliers (supplier_id,supplier_email,supplier_name,supplier_phone) VALUES (11,'kontakt@coffee-sandwich.dk','Coffee & Sandwich','43432630');
+INSERT INTO stlunch_suppliers (supplier_id,supplier_email,supplier_name,supplier_phone) VALUES (12,'ibrahimelhaj@hotmail.com','Bagels n'' Cream','60790280');
+
+INSERT INTO stlunch_users (user_id,user_email,user_name,administrator_yn,passwd_salt,passwd_enc,inactive_yn) VALUES (50,'helle.bohn@scott-tiger.dk','Helle Wittendorff Bohn','Y',null,'nisse',null);
+INSERT INTO stlunch_users (user_id,user_email,user_name,administrator_yn,passwd_salt,passwd_enc,inactive_yn) VALUES (51,'maria.kragh@scott-tiger.dk','Maria Kragh','Y',null,'nisse',null);
+INSERT INTO stlunch_users (user_id,user_email,user_name,administrator_yn,passwd_salt,passwd_enc,inactive_yn) VALUES (52,'pia.molgaard@scott-tiger.dk','Pia Mølgaard Sørensen','Y',null,'nisse',null);
+INSERT INTO stlunch_users (user_id,user_email,user_name,administrator_yn,passwd_salt,passwd_enc,inactive_yn) VALUES (53,'lykke.luimes@scott-tiger.dk','Lykke Luimes','Y',null,'nisse',null);
+INSERT INTO stlunch_users (user_id,user_email,user_name,administrator_yn,passwd_salt,passwd_enc,inactive_yn) VALUES (54,'torben.bolvig@scott-tiger.dk','Torben Bolvig','N',null,'nisse',null);
+INSERT INTO stlunch_users (user_id,user_email,user_name,administrator_yn,passwd_salt,passwd_enc,inactive_yn) VALUES (55,'tom.slivsgaard@scott-tiger.dk','Tom Slivsgaard','N',null,'nisse',null);
+INSERT INTO stlunch_users (user_id,user_email,user_name,administrator_yn,passwd_salt,passwd_enc,inactive_yn) VALUES (56,'maria.daugaard@scott-tiger.dk','Maria Daugaard','N',null,'nisse',null);
+INSERT INTO stlunch_users (user_id,user_email,user_name,administrator_yn,passwd_salt,passwd_enc,inactive_yn) VALUES (57,'ole.kramer@scott-tiger.dk','Ole Kramer','N',null,'nisse',null);
+INSERT INTO stlunch_users (user_id,user_email,user_name,administrator_yn,passwd_salt,passwd_enc,inactive_yn) VALUES (58,'kristian.hansen@scott-tiger.dk','Kristian Hansen','N',null,'nisse',null);
+INSERT INTO stlunch_users (user_id,user_email,user_name,administrator_yn,passwd_salt,passwd_enc,inactive_yn) VALUES (59,'jeanette.hansen@scott-tiger.dk','Jeanette Hansen','N',null,'nisse',null);
+INSERT INTO stlunch_users (user_id,user_email,user_name,administrator_yn,passwd_salt,passwd_enc,inactive_yn) VALUES (60,'ole.thomsen@scott-tiger.dk','Ole Thomsen','N',null,'nisse',null);
+INSERT INTO stlunch_users (user_id,user_email,user_name,administrator_yn,passwd_salt,passwd_enc,inactive_yn) VALUES (61,'lars.baad@scott-tiger.dk','Lars Baad-Jensen','N',null,'nisse',null);
+INSERT INTO stlunch_users (user_id,user_email,user_name,administrator_yn,passwd_salt,passwd_enc,inactive_yn) VALUES (62,'brian.peersen@scott-tiger.dk','Brian Pedersen','N',null,'nisse',null);
+INSERT INTO stlunch_users (user_id,user_email,user_name,administrator_yn,passwd_salt,passwd_enc,inactive_yn) VALUES (63,'martin.vegeberg@scott-tiger.dk','Martin Vegeberg Nielsen','N',null,'nisse',null);
+INSERT INTO stlunch_users (user_id,user_email,user_name,administrator_yn,passwd_salt,passwd_enc,inactive_yn) VALUES (64,'andreas.nielsen@scott-tiger.dk','Andreas Lund Nielsen','N',null,'nisse',null);
+INSERT INTO stlunch_users (user_id,user_email,user_name,administrator_yn,passwd_salt,passwd_enc,inactive_yn) VALUES (65,'erling.friis.egelund@scott-tiger.dk','Erling Friis Egelund','N',null,'nisse',null);
+INSERT INTO stlunch_users (user_id,user_email,user_name,administrator_yn,passwd_salt,passwd_enc,inactive_yn) VALUES (66,'rene.johansen@scott-tiger.dk','Rene Johansen','N',null,'nisse',null);
+INSERT INTO stlunch_users (user_id,user_email,user_name,administrator_yn,passwd_salt,passwd_enc,inactive_yn) VALUES (67,'mickael.eriksson@scott-tiger.dk','Mickael Eriksson','N',null,'nisse',null);
+INSERT INTO stlunch_users (user_id,user_email,user_name,administrator_yn,passwd_salt,passwd_enc,inactive_yn) VALUES (68,'morten.borges@scott-tiger.dk','Morten Borges','N',null,'nisse',null);
+INSERT INTO stlunch_users (user_id,user_email,user_name,administrator_yn,passwd_salt,passwd_enc,inactive_yn) VALUES (69,'peter.roboz@scott-tiger.dk','Peter Roboz','N',null,'nisse',null);
+INSERT INTO stlunch_users (user_id,user_email,user_name,administrator_yn,passwd_salt,passwd_enc,inactive_yn) VALUES (70,'mats.norreby@scott-tiger.dk','Mats Norreby','N',null,'nisse',null);
+INSERT INTO stlunch_users (user_id,user_email,user_name,administrator_yn,passwd_salt,passwd_enc,inactive_yn) VALUES (71,'peter.gjelstrup@scott-tiger.dk','Peter Gjelstrup','N',null,'nisse',null);
